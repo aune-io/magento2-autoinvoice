@@ -60,7 +60,7 @@ class InvoiceProcess implements InvoiceProcessInterface
         
         return $this->orderCollectionFactory->create()
             ->addFieldToFilter('status', ['in' => $statuses])
-            ->addFieldToFilter('total_invoiced', ['isnull' => true]);
+            ->addFieldToFilter('total_invoiced', ['null' => true]);
     }
     
     /**
