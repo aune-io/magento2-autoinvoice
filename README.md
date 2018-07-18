@@ -1,5 +1,5 @@
 # Magento 2 Auto Invoice
-Automatically invoice all complete orders in your Magento 2 store.
+Magento 2 procedure to automatically invoice orders in a given status.
 
 [![Build Status](https://travis-ci.org/aune-io/magento2-autoinvoice.svg?branch=master)](https://travis-ci.org/aune-io/magento2-autoinvoice)
 [![Coverage Status](https://coveralls.io/repos/github/aune-io/magento2-autoinvoice/badge.svg?branch=master)](https://coveralls.io/github/aune-io/magento2-autoinvoice?branch=master)
@@ -45,7 +45,7 @@ $ bin/magento aune:autoinvoice:process --dry-run=1
 By activating the cron, the procedure will be automatically executed every hour.
 
 1. Login to the admin
-2. Go to Stores > Configuration > Sales > General
+2. Go to Stores > Configuration > Sales > Auto Invoice
 3. Set _Automatically invoice completed orders_ to yes
 4. Clean the cache
 

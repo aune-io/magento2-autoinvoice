@@ -47,7 +47,7 @@ class InvoiceProcess
             return;
         }
         
-        $this->logger->info('Processing completed orders without invoice.');
+        $this->logger->info('Starting auto invoice procedure.');
         $collection = $this->invoiceProcess->getOrdersToInvoice();
         
         foreach ($collection as $order) {
@@ -64,6 +64,6 @@ class InvoiceProcess
         	}
         }
         
-        $this->logger->info('Procedure completed.');
+        $this->logger->info('Auto invoice procedure completed.');
     }
 }

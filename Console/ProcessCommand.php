@@ -86,7 +86,7 @@ class ProcessCommand extends Command
             $this->state->setAreaCode('adminhtml');
         }
         
-        $output->writeln('<fg=green>Starting auto invoice process</>');
+        $output->writeln('<fg=green>Starting auto invoice procedure</>');
         $dryRun = $input->getOption(self::OPTION_DRY_RUN);
         if ($dryRun) {
             $output->writeln('<fg=yellow>This is a dry run, no orders will actually be invoiced.</>');
@@ -118,6 +118,6 @@ class ProcessCommand extends Command
         	}
         }
         
-    	$output->writeln('<fg=green>Procedure completed.</>');
+    	$output->writeln('<fg=green>Auto invoice procedure completed.</>');
     }
 }

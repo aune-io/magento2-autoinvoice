@@ -7,10 +7,17 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice as OrderInvoice;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
 use Magento\Sales\Model\Service\InvoiceService;
+
 use Aune\AutoInvoice\Api\InvoiceProcessInterface;
+use Aune\AutoInvoice\Helper\Data as HelperData;
 
 class InvoiceProcess implements InvoiceProcessInterface
 {
+    /**
+     * @var HelperData
+     */
+    private $helperData;
+    
     /**
      * @var OrderCollectionFactory
      */
@@ -27,15 +34,18 @@ class InvoiceProcess implements InvoiceProcessInterface
     private $invoiceService;
     
     /**
+     * @param HelperData $helperData
      * @param OrderCollectionFactory $orderCollectionFactory
      * @param Transaction $transaction
      * @param InvoiceService $invoiceService
      */
     public function __construct(
+        HelperData $helperData,
         OrderCollectionFactory $orderCollectionFactory,
         Transaction $transaction,
         InvoiceService $invoiceService
     ) {
+        $this->helperData = $helperData;
         $this->orderCollectionFactory = $orderCollectionFactory;
         $this->transaction = $transaction;
         $this->invoiceService = $invoiceService;
@@ -46,9 +56,11 @@ class InvoiceProcess implements InvoiceProcessInterface
      */
     public function getOrdersToInvoice()
     {
+        $statuses = $this->helperData->getOrderStatuses();
+        
         return $this->orderCollectionFactory->create()
-            ->addFieldToFilter('status', ['eq' => Order::STATE_COMPLETE])
-            ->addFieldToFilter('total_invoiced', ['eq' => 0]);
+            ->addFieldToFilter('status', ['in' => $statuses])
+            ->addFieldToFilter('total_invoiced', ['isnull' => true]);
     }
     
     /**

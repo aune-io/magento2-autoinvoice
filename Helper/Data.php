@@ -6,7 +6,8 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 
 class Data
 {
-    const XML_PATH_AUTO_INVOICE_COMPLETE = 'sales/general/auto_invoice_complete';
+    const XML_PATH_CRON_ENABLED = 'sales/autoinvoice/cron_active';
+    const XML_PATH_ORDER_STATUSES = 'sales/autoinvoice/statuses';
 
     /**
      * @var ScopeConfigInterface
@@ -27,6 +28,16 @@ class Data
      */
     public function isCronEnabled()
     {
-        return $this->scopeConfig->isSetFlag(self::XML_PATH_AUTO_INVOICE_COMPLETE);
+        return $this->scopeConfig->isSetFlag(self::XML_PATH_CRON_ENABLED);
+    }
+    
+    /**
+     * Return statuses to process
+     */
+    public function getOrderStatuses()
+    {
+        $value = $this->scopeConfig->getValue(self::XML_PATH_ORDER_STATUSES);
+        
+        return $value ? explode(',', $value) : [];
     }
 }
