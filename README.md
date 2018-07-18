@@ -25,6 +25,10 @@ $ composer require aune-io/magento2-autoinvoice
 $ bin/magento module:enable Aune_AutoInvoice
 $ bin/magento setup:upgrade
 ```
+3. Login to the admin
+4. Go to Stores > Configuration > Sales > Auto Invoice
+5. On _Status_, select the list of statuses that should be automatically invoiced
+6. Clean the cache
 
 ## Usage
 The module supports two different usage methods.
@@ -46,7 +50,7 @@ By activating the cron, the procedure will be automatically executed every hour.
 
 1. Login to the admin
 2. Go to Stores > Configuration > Sales > Auto Invoice
-3. Set _Automatically invoice completed orders_ to yes
+3. Set _Schedule procedure_ to yes
 4. Clean the cache
 
 ## Authors, contributors and maintainers
