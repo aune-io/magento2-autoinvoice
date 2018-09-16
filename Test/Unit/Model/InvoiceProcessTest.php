@@ -8,7 +8,10 @@ use Magento\Sales\Model\Order\Invoice as OrderInvoice;
 use Magento\Sales\Model\ResourceModel\Order\Collection as OrderCollection;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
 use Magento\Sales\Model\Service\InvoiceService;
+use Magento\Sales\Model\Service\InvoiceServiceFactory;
 
+use Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterface;
+use Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterfaceFactory;
 use Aune\AutoInvoice\Api\InvoiceProcessInterface;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 use Aune\AutoInvoice\Model\InvoiceProcess;
@@ -26,14 +29,19 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
     private $orderCollectionFactoryMock;
     
     /**
+     * @var InvoiceProcessItemInterfaceFactory|PHPUnit_Framework_MockObject_MockObject
+     */
+    private $invoiceProcessItemFactoryMock;
+    
+    /**
      * @var Transaction|PHPUnit_Framework_MockObject_MockObject
      */
     private $transactionMock;
     
     /**
-     * @var InvoiceService|PHPUnit_Framework_MockObject_MockObject
+     * @var InvoiceServiceFactory|PHPUnit_Framework_MockObject_MockObject
      */
-    private $invoiceServiceMock;
+    private $invoiceServiceFactoryMock;
     
     /**
      * @var InvoiceProcess
@@ -50,19 +58,26 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         
+        $this->invoiceProcessItemFactoryMock = $this->getMockBuilder(InvoiceProcessItemInterfaceFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        
         $this->transactionMock = $this->getMockBuilder(Transaction::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->invoiceServiceMock = $this->getMockBuilder(InvoiceService::class)
+        $this->invoiceServiceFactoryMock = $this->getMockBuilder(InvoiceServiceFactory::class)
             ->disableOriginalConstructor()
+            ->setMethods(['create'])
             ->getMock();
         
         $this->invoiceProcess = new InvoiceProcess(
             $this->helperDataMock,
             $this->orderCollectionFactoryMock,
+            $this->invoiceProcessItemFactoryMock,
             $this->transactionMock,
-            $this->invoiceServiceMock
+            $this->invoiceServiceFactoryMock
         );
     }
 
@@ -78,10 +93,20 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
     }
     
     /**
-     * @covers \Aune\AutoInvoice\Model\InvoiceProcess::getOrdersToInvoice
+     * @covers \Aune\AutoInvoice\Model\InvoiceProcess::getItemsToProcess
      */
-    public function testGetOrdersToInvoice()
+    public function testGetItemsToProcess()
     {
+        $dstStatus = 'complete';
+        
+        $this->helperDataMock->expects(self::once())
+            ->method('getProcessingRules')
+            ->willReturn([[
+                HelperData::RULE_SOURCE_STATUS => 'processing',
+                HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
+                HelperData::RULE_DESTINATION_STATUS => $dstStatus,
+            ]]);
+        
         $orderCollectionMock = $this->getMockBuilder(OrderCollection::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -94,10 +119,167 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
             ->method('addFieldToFilter')
             ->willReturn($orderCollectionMock);
         
+        $orders = [
+            $this->getOrderMock(1, 'paypal'),
+            $this->getOrderMock(2, 'paypal_express'),
+            $this->getOrderMock(3, 'braintree'),
+            $this->getOrderMock(4, 'braintree'),
+            $this->getOrderMock(5, 'aune_stripe'),
+        ];
+        
+        $orderCollectionMock->expects(self::once())
+            ->method('getIterator')
+            ->willReturn(new \ArrayIterator($orders));
+        
+        $items = [];
+        foreach ($orders as $order) {
+            $itemMock = $this->getMockForAbstractClass(InvoiceProcessItemInterface::class);
+            
+            $itemMock->expects(self::once())
+                ->method('setOrder')
+                ->with($order)
+                ->willReturn($itemMock);
+            
+            $itemMock->expects(self::once())
+                ->method('setDestinationStatus')
+                ->with($dstStatus)
+                ->willReturn($itemMock);
+            
+            $items[$order->getId()] = $itemMock;
+        }
+        
+        $this->invoiceProcessItemFactoryMock->expects(self::exactly(count($items)))
+            ->method('create')
+            ->willReturnOnConsecutiveCalls(...$items);
+        
         $this->assertEquals(
-            $this->invoiceProcess->getOrdersToInvoice(),
-            $orderCollectionMock
+            $this->invoiceProcess->getItemsToProcess(),
+            $items
         );
+    }
+    
+    /**
+     * @covers \Aune\AutoInvoice\Model\InvoiceProcess::getItemsToProcess
+     */
+    public function testGetItemsToProcessPaymentMethods()
+    {
+        $srcStatus = 'processing';
+        $dstStatusPaypal = 'complete';
+        $dstStatusBraintree = 'processing';
+        
+        $this->helperDataMock->expects(self::once())
+            ->method('getProcessingRules')
+            ->willReturn([[
+                HelperData::RULE_SOURCE_STATUS => $srcStatus,
+                HelperData::RULE_PAYMENT_METHOD => 'paypal',
+                HelperData::RULE_DESTINATION_STATUS => $dstStatusPaypal,
+            ], [
+                HelperData::RULE_SOURCE_STATUS => $srcStatus,
+                HelperData::RULE_PAYMENT_METHOD => 'braintree',
+                HelperData::RULE_DESTINATION_STATUS => $dstStatusBraintree,
+            ]]);
+        
+        $paypalOrders = [
+            $this->getOrderMock(1, 'paypal'),
+        ];
+        $braintreeOrders = [
+            $this->getOrderMock(3, 'braintree'),
+            $this->getOrderMock(4, 'braintree')
+        ];
+        $otherOrders = [
+            $this->getOrderMock(2, 'paypal_express'),
+            $this->getOrderMock(5, 'aune_stripe'),
+        ];
+        
+        $data = [
+            $dstStatusPaypal => $paypalOrders,
+            $dstStatusBraintree => $braintreeOrders,
+        ];
+        
+        $items = [];
+        $orderCollectionMocks = [];
+        
+        foreach ($data as $dstStatus => $orders) {
+            $orderCollectionMock = $this->getMockBuilder(OrderCollection::class)
+                ->disableOriginalConstructor()
+                ->getMock();
+            
+            $orderCollectionMock->expects(self::exactly(2))
+                ->method('addFieldToFilter')
+                ->withConsecutive(
+                    ['status', ['eq' => $srcStatus]],
+                    ['total_invoiced', ['null' => true]]
+                )
+                ->willReturnOnConsecutiveCalls($orderCollectionMock, $orderCollectionMock);
+            
+            $orderCollectionMock->expects(self::once())
+                ->method('getIterator')
+                ->willReturn(new \ArrayIterator(array_merge($orders, $otherOrders)));
+            
+            $orderCollectionMocks []= $orderCollectionMock;
+            
+            foreach ($orders as $order) {
+                $itemMock = $this->getMockForAbstractClass(InvoiceProcessItemInterface::class);
+                $itemMock->expects(self::once())
+                    ->method('setOrder')
+                    ->with($order)
+                    ->willReturn($itemMock);
+                
+                $itemMock->expects(self::once())
+                    ->method('setDestinationStatus')
+                    ->with($dstStatus)
+                    ->willReturn($itemMock);
+                
+                $items[$order->getId()] = $itemMock;
+            }
+        }
+        
+        $this->orderCollectionFactoryMock->expects(self::exactly(count($orderCollectionMocks)))
+            ->method('create')
+            ->willReturnOnConsecutiveCalls(...$orderCollectionMocks);
+        
+        $this->invoiceProcessItemFactoryMock->expects(self::exactly(count($items)))
+            ->method('create')
+            ->willReturnOnConsecutiveCalls(...$items);
+        
+        $this->assertEquals(
+            $this->invoiceProcess->getItemsToProcess(),
+            $items
+        );
+    }
+    
+    /**
+     * Returns new mock order with given payment method
+     */
+    private function getOrderMock(int $id, string $paymentMethod)
+    {
+        $methodInstanceMock = $this->getMockForAbstractClass(\Magento\Payment\Model\MethodInterface::class);
+        
+        $methodInstanceMock->expects(self::any())
+            ->method('getCode')
+            ->willReturn($paymentMethod);
+        
+        $paymentMock = $this->getMockBuilder(\Magento\Sales\Model\Order\Payment::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        
+        $paymentMock->expects(self::any())
+            ->method('getMethodInstance')
+            ->willReturn($methodInstanceMock);
+        
+        $orderMock = $this->getMockBuilder(Order::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        
+        $orderMock->expects(self::any())
+            ->method('getId')
+            ->willReturn($id);
+        
+        $orderMock->expects(self::any())
+            ->method('getPayment')
+            ->willReturn($paymentMock);
+        
+        return $orderMock;
     }
     
     /**
@@ -105,19 +287,43 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
      */
     public function testInvoice()
     {
+        $status = 'complete';
         $orderMock = $this->getMockBuilder(Order::class)
             ->disableOriginalConstructor()
             ->getMock();
+        
+        $orderMock->expects(self::once())
+            ->method('setStatus')
+            ->with($status)
+            ->willReturn($orderMock);
+        
+        $itemMock = $this->getMockForAbstractClass(InvoiceProcessItemInterface::class);
+        
+        $itemMock->expects(self::once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
+        
+        $itemMock->expects(self::once())
+            ->method('getDestinationStatus')
+            ->willReturn($status);
         
         $invoiceMock = $this->getMockBuilder(OrderInvoice::class)
             ->disableOriginalConstructor()
             ->setMethods(['setRequestedCaptureCase', 'register'])
             ->getMock();
         
-        $this->invoiceServiceMock->expects(self::once())
+        $invoiceServiceMock = $this->getMockBuilder(InvoiceService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        
+        $invoiceServiceMock->expects(self::once())
             ->method('prepareInvoice')
             ->with($orderMock)
             ->willReturn($invoiceMock);
+        
+        $this->invoiceServiceFactoryMock->expects(self::once())
+            ->method('create')
+            ->willReturn($invoiceServiceMock);
         
         $invoiceMock->expects(self::once())
             ->method('setRequestedCaptureCase')
@@ -133,6 +339,6 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
         $this->transactionMock->expects(self::once())
             ->method('save');
         
-        $this->invoiceProcess->invoice($orderMock);
+        $this->invoiceProcess->invoice($itemMock);
     }
 }

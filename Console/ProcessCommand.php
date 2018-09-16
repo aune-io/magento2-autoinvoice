@@ -94,10 +94,11 @@ class ProcessCommand extends Command
             $output->writeln('<fg=yellow>This is a dry run, no orders will actually be invoiced.</>');
         }
         
-        $collection = $this->invoiceProcess->getOrdersToInvoice();
-        foreach ($collection as $order) {
+        $items = $this->invoiceProcess->getItemsToProcess();
+        foreach ($items as $item) {
             try {
                 
+                $order = $item->getOrder();
                 $message = sprintf(
     				'Invoicing completed order #%s',
     				$order->getIncrementId()
@@ -109,7 +110,7 @@ class ProcessCommand extends Command
                 }
                 
                 $this->logger->info($message);
-			    $this->invoiceProcess->invoice($order);
+			    $this->invoiceProcess->invoice($item);
 			    
         	} catch (\Exception $ex) {
         		$output->writeln(sprintf(

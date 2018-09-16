@@ -4,6 +4,9 @@
 	<preference for="Aune\AutoInvoice\Api\InvoiceProcessInterface"
 	    type="Aune\AutoInvoice\Model\InvoiceProcess" />
 	
+	<preference for="Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterface"
+	    type="Aune\AutoInvoice\Model\InvoiceProcessItem" />
+	
 	<!-- Console commands -->
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>

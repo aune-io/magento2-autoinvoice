@@ -48,16 +48,17 @@ class InvoiceProcess
         }
         
         $this->logger->info('Starting auto invoice procedure.');
-        $collection = $this->invoiceProcess->getOrdersToInvoice();
+        $items = $this->invoiceProcess->getItemsToProcess();
         
-        foreach ($collection as $order) {
+        foreach ($items as $item) {
             try {
                 
+                $order = $item->getOrder();
                 $this->logger->info(sprintf(
     				'Invoicing completed order #%s',
     				$order->getIncrementId()
     			));
-    			$this->invoiceProcess->invoice($order);
+    			$this->invoiceProcess->invoice($item);
 			    
         	} catch (\Exception $ex) {
         		$this->logger->critical($ex->getMessage());
