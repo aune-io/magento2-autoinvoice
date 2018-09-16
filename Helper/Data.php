@@ -28,7 +28,7 @@ class Data
      */
     public function isCronEnabled()
     {
-        return $this->scopeConfig->isSetFlag(self::XML_PATH_CRON_ENABLED);
+        return (bool) $this->scopeConfig->isSetFlag(self::XML_PATH_CRON_ENABLED);
     }
     
     /**

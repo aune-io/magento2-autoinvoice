@@ -14,6 +14,8 @@ use Aune\AutoInvoice\Api\InvoiceProcessInterface;
 
 class ProcessCommand extends Command
 {
+    const COMMAND_NAME = 'aune:autoinvoice:process';
+    const COMMAND_DESCRIPTION = 'Create invoices according to configuration.';
 	const OPTION_DRY_RUN = 'dry-run';
 	
     /**
@@ -63,8 +65,8 @@ class ProcessCommand extends Command
             )
         ];
 
-        $this->setName('aune:autoinvoice:process')
-            ->setDescription('Invoice completed orders')
+        $this->setName(self::COMMAND_NAME)
+            ->setDescription(self::COMMAND_DESCRIPTION)
             ->setDefinition($options);
 
         parent::configure();
