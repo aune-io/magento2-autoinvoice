@@ -2,6 +2,9 @@
 
 namespace Aune\AutoInvoice\Model\Config\Source\Order;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Status extends \Magento\Sales\Model\Config\Source\Order\Status
 {
     /**

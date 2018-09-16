@@ -11,6 +11,9 @@ use Magento\Sales\Model\Service\InvoiceService;
 use Aune\AutoInvoice\Api\InvoiceProcessInterface;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 
+/**
+ * @SuppressWarnings(PHPMD.LongVariable)
+ */
 class InvoiceProcess implements InvoiceProcessInterface
 {
     /**
