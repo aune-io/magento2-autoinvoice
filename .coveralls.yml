@@ -1,0 +1,3 @@
+coverage_clover: Test/Unit/logs/clover.xml
+json_path: Test/Unit/logs/coveralls-upload.json
+service_name: travis-ci

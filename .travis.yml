@@ -1,0 +1,25 @@
+sudo: false
+
+language: php
+
+php:
+    - 7.0
+    - 7.1
+
+install:
+    - echo "{\"http-basic\":{\"repo.magento.com\":{\"username\":\"${MAGENTO_USERNAME}\",\"password\":\"${MAGENTO_PASSWORD}\"}}}" > ~/.composer/auth.json
+    - composer install --prefer-dist
+    - composer create-project --repository=https://repo.magento.com magento/marketplace-eqp marketplace-eqp
+
+script:
+    - php marketplace-eqp/vendor/bin/phpcs Api/ Console/ Cron/ Helper/ Model/ Test/ --standard=MEQP2 --severity=10
+    - php vendor/bin/phpmd Api/,Console/,Cron/,Helper/,Model/,Test/ text cleancode,codesize,controversial,design,naming,unusedcode --ignore-violations-on-exit
+    - php vendor/phpunit/phpunit/phpunit --coverage-clover Test/Unit/logs/clover.xml Test
+
+after_script:
+    - php vendor/bin/coveralls -v
+
+env:
+    global:
+        - secure: "aYyUmsObfCxq7qLOkg+VJ5NUomWQE4zQLzt60KG5VWYue5bcV4yTe0QM8XUDN01qJn0A2X0qWVL8KsUt1EpzjlvdSvSjZFKdDQL2ROt3yvsJNJx+GEHfMiod/p2hc6MdhoeJkdxv8JZ6pzkAugSmc13jBucMD1Z2oNzY6jt+FwgsmqUWhQuMMhpiDxdAWguE0PpsAR3SnytnSp+mO0mrAG3TPAE5n23Rr9k0/euF7QTnpLfZkGRcvYX4SRc2Hp+v7XKy52t2eEtINGh/4i2C0lH3KfrPOVJWPnNyZJLPnjZjTrptZ/nYHShxUnenaPoYeeIHb43ZE0d1qY4+XSgDPuptZ6ENpCcVu25Y0itiakwFjVPu9Ujljh69/B+oEQHvSUsoedVG+iP9rwqeqvcV7G6NcxwvC+Ghi01ePKK9z54SCWf7zXJYFzwRwMUW3E57qAp3SHEfzs6J3LZr1uiqGwCWzJZ82pa1axLjwqzAO8xfeWSFkSaRDKcAKMO6Gw6WZHbleRt6BpaXJdhWN9XiYrUM8hOAQ9id27L9naMJdCctOUwgPvxPHSVuWUOIHl3+oiYmCyOGGD1NSUDkYZxSY0gJrHEA180EBlLIDG4HWWYikFDKwNBEa66F/YQP/6+TqcXVOCdHVGHET90A+TYKFSyPnmCa4QHzznq4RaGdISo="
+        - secure: "G6MUkeEcAj7hJ0J/uFPn87GOGh0HJQqG/Fd2Cusjos9cs1KCDLlTSYOkRdpNbXc2sg8POWje6pIjukMyb03dzRM119bvocyhPHqUgjzGlelEGfon6vxQPYWeLQD8wc+cc3/6vKhbAkTFtqYnrcuyYlmYMp71J4eDLqvK9/uh1zliAdakW/BR179tf4dUYGSkOKgNGFLdwd4QW3dmGG6jdMIxUeF/55h8v3y2xdMgafgKOjfG4os2Yy2ijQNlogs80BsTbTdKdeWBIWVEv1CxMKfXUKZhLMPConOtXlopBd6+pq9tmF9DV7ey1Um8VUWzBpGMJGya8BwD6V+xvxq68ewyMqBhq4XF+J2gGObAuA4qXE0nLJMteeGkydyu3RvdVESSdrp9dbmEV7ylhnKR8qxF0uowl9bnPWS/S7Pdc5tv2SCfnuSqSqdvqSDOBJpChKR8F8Ya4NwB0uVRqCYHN7ti0lYpYgzhTqQQHqUxEnOeaz4C5Kx6HfcgZx8QkBVUamtW8SxObD4SROvXxrnpwlK8cliKWx9tc650TZdDXmjxsYSJzzvx3ff8+jbY1vWq+FU/Md6F0mzWWdtit7iyDveuneVajtwT+vfF/cu0Z8kvaI+/SxcCMLn/m2u3Q6sPyMVLCMNf8t0eqV+6/Xq31LAirpoQVFah67Edk9W06Io="
