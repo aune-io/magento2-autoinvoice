@@ -1,9 +1,10 @@
 <?php
 
-namespace Aune\AutoInvoice\Test\Unit\Console;
+namespace Aune\AutoInvoice\Test\Unit\Cron;
 
 use Psr\Log\LoggerInterface;
 use Magento\Sales\Model\Order;
+use Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterface;
 use Aune\AutoInvoice\Api\InvoiceProcessInterface;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 use Aune\AutoInvoice\Cron\InvoiceProcess;
@@ -39,11 +40,8 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->loggerMock = $this->getMockBuilder(LoggerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        
-        $this->invoiceProcessMock = $this->createMock(InvoiceProcessInterface::class);
+        $this->loggerMock = $this->getMockForAbstractClass(LoggerInterface::class);
+        $this->invoiceProcessMock = $this->getMockForAbstractClass(InvoiceProcessInterface::class);
         
         $this->invoiceProcess = new InvoiceProcess(
             $this->helperDataMock,
@@ -62,7 +60,7 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
             ->willReturn(false);
         
         $this->invoiceProcessMock->expects(self::exactly(0))
-            ->method('getOrdersToInvoice');
+            ->method('getItemsToProcess');
         
         $this->invoiceProcessMock->expects(self::exactly(0))
             ->method('invoice');
@@ -79,22 +77,25 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
             ->method('isCronEnabled')
             ->willReturn(true);
         
-        $n = 10;
-        $orderMocks = [];
-        
-        for ($i=0; $i<$n; $i++) {
+        $itemMocks = [];
+        for ($i=0; $i<10; $i++) {
             $orderMock = $this->getMockBuilder(Order::class)
                 ->disableOriginalConstructor()
                 ->getMock();
             
-            $orderMocks []= $orderMock;
+            $itemMock = $this->getMockForAbstractClass(InvoiceProcessItemInterface::class);
+            $itemMock->expects(self::any())
+                ->method('getOrder')
+                ->willReturn($orderMock);
+            
+            $itemMocks []= $itemMock;
         }
         
         $this->invoiceProcessMock->expects(self::once())
-            ->method('getOrdersToInvoice')
-            ->willReturn($orderMocks);
+            ->method('getItemsToProcess')
+            ->willReturn($itemMocks);
         
-        $this->invoiceProcessMock->expects(self::exactly(count($orderMocks)))
+        $this->invoiceProcessMock->expects(self::exactly(count($itemMocks)))
             ->method('invoice');
         
         $this->invoiceProcess->execute();

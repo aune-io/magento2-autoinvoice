@@ -6,9 +6,11 @@ use Magento\Framework\DB\Transaction;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice as OrderInvoice;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
-use Magento\Sales\Model\Service\InvoiceService;
+use Magento\Sales\Model\Service\InvoiceServiceFactory;
 
 use Aune\AutoInvoice\Api\InvoiceProcessInterface;
+use Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterface;
+use Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterfaceFactory;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 
 /**
@@ -27,51 +29,93 @@ class InvoiceProcess implements InvoiceProcessInterface
     private $orderCollectionFactory;
     
     /**
+     * @var InvoiceProcessItemInterfaceFactory
+     */
+    private $invoiceProcessItemFactory;
+    
+    /**
      * @var Transaction
      */
     private $transaction;
     
     /**
-     * @var InvoiceService
+     * @var InvoiceServiceFactory
      */
-    private $invoiceService;
+    private $invoiceServiceFactory;
     
     /**
      * @param HelperData $helperData
      * @param OrderCollectionFactory $orderCollectionFactory
+     * @param InvoiceProcessItemInterfaceFactory $invoiceProcessItemFactory
      * @param Transaction $transaction
-     * @param InvoiceService $invoiceService
+     * @param InvoiceServiceFactory $invoiceServiceFactory
      */
     public function __construct(
         HelperData $helperData,
         OrderCollectionFactory $orderCollectionFactory,
+        InvoiceProcessItemInterfaceFactory $invoiceProcessItemFactory,
         Transaction $transaction,
-        InvoiceService $invoiceService
+        InvoiceServiceFactory $invoiceServiceFactory
     ) {
         $this->helperData = $helperData;
         $this->orderCollectionFactory = $orderCollectionFactory;
+        $this->invoiceProcessItemFactory = $invoiceProcessItemFactory;
         $this->transaction = $transaction;
-        $this->invoiceService = $invoiceService;
+        $this->invoiceServiceFactory = $invoiceServiceFactory;
     }
     
     /**
      * @inheritdoc
      */
-    public function getOrdersToInvoice()
+    public function getItemsToProcess()
     {
-        $statuses = $this->helperData->getOrderStatuses();
+        $items = [];
+        $rules = $this->helperData->getProcessingRules();
         
-        return $this->orderCollectionFactory->create()
-            ->addFieldToFilter('status', ['in' => $statuses])
-            ->addFieldToFilter('total_invoiced', ['null' => true]);
+        foreach ($rules as $rule) {
+            $collection = $this->orderCollectionFactory->create()
+                ->addFieldToFilter('status', ['eq' => $rule[HelperData::RULE_SOURCE_STATUS]])
+                ->addFieldToFilter('total_invoiced', ['null' => true]);
+            
+            foreach ($collection as $order) {
+                if ($rule[HelperData::RULE_PAYMENT_METHOD] != HelperData::RULE_PAYMENT_METHOD_ALL
+                    && $rule[HelperData::RULE_PAYMENT_METHOD] != $this->getPaymentMethodCode($order)) {
+                    
+                    continue;
+                }
+                
+                $items[$order->getId()] = $this->invoiceProcessItemFactory->create()
+                    ->setOrder($order)
+                    ->setDestinationStatus($rule[HelperData::RULE_DESTINATION_STATUS]);
+            }
+        }
+        
+        return $items;
+    }
+    
+    /**
+     * Returns payment method code of the given order
+     */
+    private function getPaymentMethodCode(Order $order)
+    {
+        try {
+            return $order->getPayment()->getMethodInstance()->getCode();
+        } catch (\Exception $ex) {
+            return '';
+        }
     }
     
     /**
      * @inheritdoc
      */
-    public function invoice(Order $order)
+    public function invoice(InvoiceProcessItemInterface $item)
     {
-        $invoice = $this->invoiceService->prepareInvoice($order);
+        $order = $item->getOrder();
+        
+        $order->setStatus($item->getDestinationStatus());
+        
+        $invoice = $this->invoiceServiceFactory->create()
+            ->prepareInvoice($order);
         $invoice->setRequestedCaptureCase(OrderInvoice::CAPTURE_OFFLINE);
         $invoice->register();
         

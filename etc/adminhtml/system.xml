@@ -9,9 +9,10 @@
                     <comment>Automatically invoice orders every hour</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="statuses" translate="label" type="multiselect" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
-                    <label>Statuses</label>
-                    <source_model>Aune\AutoInvoice\Model\Config\Source\Order\Status</source_model>
+                <field id="processing_rules" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Processing Rules</label>
+                    <frontend_model>Aune\AutoInvoice\Block\Adminhtml\Form\Field\ProcessingRule</frontend_model>
+                    <backend_model>Aune\AutoInvoice\Model\Adminhtml\System\Config\ProcessingRule</backend_model>
                 </field>
             </group>
         </section>

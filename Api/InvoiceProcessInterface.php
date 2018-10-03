@@ -2,19 +2,23 @@
 
 namespace Aune\AutoInvoice\Api;
 
+/**
+ * @api
+ */
 interface InvoiceProcessInterface
 {
     /**
-     * Returns a list of orders that should be invoiced.
+     * Returns a list of items to process.
+     * Every item consists of an order, and a destination status.
      * 
-     * @returns \Magento\Sales\Model\ResourceModel\Order\Collection
+     * @returns \Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterface
      */
-    public function getOrdersToInvoice();
+    public function getItemsToProcess();
     
     /**
      * Invoice order
      * 
-     * @param \Magento\Sales\Model\Order $order
+     * @param \Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterface $item
      */
-    public function invoice(\Magento\Sales\Model\Order $order);
+    public function invoice(\Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterface $item);
 }

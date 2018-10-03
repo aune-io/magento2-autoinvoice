@@ -3,6 +3,7 @@
 namespace Aune\AutoInvoice\Test\Unit\Helper;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Serialize\Serializer\Json;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 
 /**
@@ -25,7 +26,8 @@ class DataTest extends \PHPUnit\Framework\TestCase
         $this->scopeConfigMock = $this->getMockForAbstractClass(ScopeConfigInterface::class);
         
         $this->helperData = new HelperData(
-            $this->scopeConfigMock
+            $this->scopeConfigMock,
+            new Json()
         );
     }
 
@@ -53,8 +55,64 @@ class DataTest extends \PHPUnit\Framework\TestCase
         return [
             ['key' => HelperData::XML_PATH_CRON_ENABLED, 'isFlag' => true, 'method' => 'isCronEnabled', 'in' => '1', 'out' => true],
             ['key' => HelperData::XML_PATH_CRON_ENABLED, 'isFlag' => true, 'method' => 'isCronEnabled', 'in' => '0', 'out' => false],
-            ['key' => HelperData::XML_PATH_ORDER_STATUSES, 'isFlag' => false, 'method' => 'getOrderStatuses', 'in' => '', 'out' => []],
-            ['key' => HelperData::XML_PATH_ORDER_STATUSES, 'isFlag' => false, 'method' => 'getOrderStatuses', 'in' => 'a,b', 'out' => ['a', 'b']],
+            ['key' => HelperData::XML_PATH_PROCESSING_RULES, 'isFlag' => false, 'method' => 'getProcessingRules', 'in' => '', 'out' => []],
         ];
+    }
+    
+    /**
+     * @dataProvider getProcessingRulesDataProvider
+     */
+    public function testGetProcessingRules($in, $out)
+    {
+        $this->scopeConfigMock->expects(self::once())
+            ->method('getValue')
+            ->with(HelperData::XML_PATH_PROCESSING_RULES)
+            ->willReturn($in);
+        
+        self::assertEquals(
+            $out,
+            $this->helperData->getProcessingRules()
+        );
+    }
+    
+    /**
+     * @return array
+     */
+    public function getProcessingRulesDataProvider()
+    {
+        return [[
+            'in' => '{"pending|*":"complete"}',
+            'out' => [[
+                HelperData::RULE_SOURCE_STATUS => 'pending',
+                HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
+                HelperData::RULE_DESTINATION_STATUS => 'complete',
+            ]],
+        ], [
+            'in' => '{"pending|*":"complete","pending|free":"processing"}',
+            'out' => [[
+                HelperData::RULE_SOURCE_STATUS => 'pending',
+                HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
+                HelperData::RULE_DESTINATION_STATUS => 'complete',
+            ], [
+                HelperData::RULE_SOURCE_STATUS => 'pending',
+                HelperData::RULE_PAYMENT_METHOD => 'free',
+                HelperData::RULE_DESTINATION_STATUS => 'processing',
+            ]],
+        ], [
+            'in' => '{"pending|*":"complete","processing|*":"complete","pending|free":"processing"}',
+            'out' => [[
+                HelperData::RULE_SOURCE_STATUS => 'pending',
+                HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
+                HelperData::RULE_DESTINATION_STATUS => 'complete',
+            ], [
+                HelperData::RULE_SOURCE_STATUS => 'processing',
+                HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
+                HelperData::RULE_DESTINATION_STATUS => 'complete',
+            ], [
+                HelperData::RULE_SOURCE_STATUS => 'pending',
+                HelperData::RULE_PAYMENT_METHOD => 'free',
+                HelperData::RULE_DESTINATION_STATUS => 'processing',
+            ]],
+        ]];
     }
 }

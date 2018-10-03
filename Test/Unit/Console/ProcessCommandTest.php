@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Magento\Framework\App\State;
 use Magento\Sales\Model\Order;
+use Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterface;
 use Aune\AutoInvoice\Api\InvoiceProcessInterface;
 use Aune\AutoInvoice\Console\ProcessCommand;
 
@@ -41,11 +42,8 @@ class ProcessCommandTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->loggerMock = $this->getMockBuilder(LoggerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        
-        $this->invoiceProcessMock = $this->createMock(InvoiceProcessInterface::class);
+        $this->loggerMock = $this->getMockForAbstractClass(LoggerInterface::class);
+        $this->invoiceProcessMock = $this->getMockForAbstractClass(InvoiceProcessInterface::class);
         
         $this->processCommand = new ProcessCommand(
             $this->stateMock,
@@ -88,20 +86,23 @@ class ProcessCommandTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         
-        $n = 10;
-        $orderMocks = [];
-        
-        for ($i=0; $i<$n; $i++) {
+        $itemMocks = [];
+        for ($i=0; $i<10; $i++) {
             $orderMock = $this->getMockBuilder(Order::class)
                 ->disableOriginalConstructor()
                 ->getMock();
             
-            $orderMocks []= $orderMock;
+            $itemMock = $this->getMockForAbstractClass(InvoiceProcessItemInterface::class);
+            $itemMock->expects(self::any())
+                ->method('getOrder')
+                ->willReturn($orderMock);
+            
+            $itemMocks []= $itemMock;
         }
         
         $this->invoiceProcessMock->expects(self::once())
-            ->method('getOrdersToInvoice')
-            ->willReturn($orderMocks);
+            ->method('getItemsToProcess')
+            ->willReturn($itemMocks);
         
         $this->invoiceProcessMock->expects(self::exactly(0))
             ->method('invoice');
@@ -127,22 +128,25 @@ class ProcessCommandTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         
-        $n = 10;
-        $orderMocks = [];
-        
-        for ($i=0; $i<$n; $i++) {
+        $itemMocks = [];
+        for ($i=0; $i<10; $i++) {
             $orderMock = $this->getMockBuilder(Order::class)
                 ->disableOriginalConstructor()
                 ->getMock();
             
-            $orderMocks []= $orderMock;
+            $itemMock = $this->getMockForAbstractClass(InvoiceProcessItemInterface::class);
+            $itemMock->expects(self::any())
+                ->method('getOrder')
+                ->willReturn($orderMock);
+            
+            $itemMocks []= $itemMock;
         }
         
         $this->invoiceProcessMock->expects(self::once())
-            ->method('getOrdersToInvoice')
-            ->willReturn($orderMocks);
+            ->method('getItemsToProcess')
+            ->willReturn($itemMocks);
         
-        $this->invoiceProcessMock->expects(self::exactly(count($orderMocks)))
+        $this->invoiceProcessMock->expects(self::exactly(count($itemMocks)))
             ->method('invoice');
         
         $this->processCommand->run($inputMock, $outputMock);

@@ -25,10 +25,15 @@ $ composer require aune-io/magento2-autoinvoice
 $ bin/magento module:enable Aune_AutoInvoice
 $ bin/magento setup:upgrade
 ```
-3. Login to the admin
-4. Go to Stores > Configuration > Sales > Auto Invoice
-5. On _Status_, select the list of statuses that should be automatically invoiced
-6. Clean the cache
+
+## Configuration
+The configuration of this module is under _Stores > Configuration > Sales > Auto Invoice_.
+There, you will be able to activate processing via cron job, and choose the behaviour of the procedure.
+
+The configuration matrix will allow you to set on for which combinations of status and payment method the extension should invoice the orders, as well as the destination status.
+A configuration example follows.
+
+<img src="https://github.com/aune-io/magento2-autoinvoice/blob/master/screenshots/settings.png" />
 
 ## Usage
 The module supports two different usage methods.
