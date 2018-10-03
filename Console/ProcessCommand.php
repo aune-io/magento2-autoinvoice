@@ -100,7 +100,7 @@ class ProcessCommand extends Command
                 
                 $order = $item->getOrder();
                 $message = sprintf(
-    				'Invoicing completed order #%s',
+    				'Invoicing order #%s',
     				$order->getIncrementId()
     			);
     			$output->writeln('<fg=green>' . $message . '</>');

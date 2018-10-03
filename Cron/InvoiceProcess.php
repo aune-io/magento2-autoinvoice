@@ -55,7 +55,7 @@ class InvoiceProcess
                 
                 $order = $item->getOrder();
                 $this->logger->info(sprintf(
-    				'Invoicing completed order #%s',
+    				'Invoicing order #%s',
     				$order->getIncrementId()
     			));
     			$this->invoiceProcess->invoice($item);
