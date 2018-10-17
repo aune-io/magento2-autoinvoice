@@ -7,6 +7,8 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice as OrderInvoice;
 use Magento\Sales\Model\ResourceModel\Order\Collection as OrderCollection;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
+use Magento\Sales\Model\ResourceModel\Order\Status\Collection as OrderStatusCollection;
+use Magento\Sales\Model\ResourceModel\Order\Status\CollectionFactory as OrderStatusCollectionFactory;
 use Magento\Sales\Model\Service\InvoiceService;
 use Magento\Sales\Model\Service\InvoiceServiceFactory;
 
@@ -30,6 +32,11 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
      * @var OrderCollectionFactory|PHPUnit_Framework_MockObject_MockObject
      */
     private $orderCollectionFactoryMock;
+    
+    /**
+     * @var OrderStatusCollectionFactory|PHPUnit_Framework_MockObject_MockObject
+     */
+    private $orderStatusCollectionFactoryMock;
     
     /**
      * @var InvoiceProcessItemInterfaceFactory|PHPUnit_Framework_MockObject_MockObject
@@ -61,6 +68,11 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
             ->disableOriginalConstructor()
             ->getMock();
         
+        $this->orderStatusCollectionFactoryMock = $this->getMockBuilder(OrderStatusCollectionFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        
         $this->invoiceProcessItemFactoryMock = $this->getMockBuilder(InvoiceProcessItemInterfaceFactory::class)
             ->disableOriginalConstructor()
             ->setMethods(['create'])
@@ -78,6 +90,7 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
         $this->invoiceProcess = new InvoiceProcess(
             $this->helperDataMock,
             $this->orderCollectionFactoryMock,
+            $this->orderStatusCollectionFactoryMock,
             $this->invoiceProcessItemFactoryMock,
             $this->transactionMock,
             $this->invoiceServiceFactoryMock
@@ -291,12 +304,41 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
     public function testInvoice()
     {
         $status = 'complete';
+        
+        $orderStatusCollectionMock = $this->getMockBuilder(OrderStatusCollection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        
+        $orderStatusCollectionMock->expects(self::once())
+            ->method('joinStates')
+            ->willReturn($orderStatusCollectionMock);
+        
+        $this->orderStatusCollectionFactoryMock->expects(self::once())
+            ->method('create')
+            ->willReturn($orderStatusCollectionMock);
+        
+        $statuses = [
+            $this->getOrderStatusMock('processing', 'processing'),
+            $this->getOrderStatusMock('pending', 'pending'),
+            $this->getOrderStatusMock('complete', 'complete'),
+            $this->getOrderStatusMock('closed', 'closed'),
+        ];
+        
+        $orderStatusCollectionMock->expects(self::once())
+            ->method('getIterator')
+            ->willReturn(new \ArrayIterator($statuses));
+        
         $orderMock = $this->getMockBuilder(Order::class)
             ->disableOriginalConstructor()
             ->getMock();
         
         $orderMock->expects(self::once())
             ->method('setStatus')
+            ->with($status)
+            ->willReturn($orderMock);
+        
+        $orderMock->expects(self::once())
+            ->method('setState')
             ->with($status)
             ->willReturn($orderMock);
         
@@ -343,5 +385,26 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
             ->method('save');
         
         $this->invoiceProcess->invoice($itemMock);
+    }
+    
+    /**
+     * Returns new mock status with given a status/state pair
+     */
+    private function getOrderStatusMock(string $status, string $state)
+    {
+        $orderStatusMock = $this->getMockBuilder(\Magento\Sales\Model\Order\Status::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getStatus', 'getState'])
+            ->getMock();
+        
+        $orderStatusMock->expects(self::once())
+            ->method('getStatus')
+            ->willReturn($status);
+        
+        $orderStatusMock->expects(self::once())
+            ->method('getState')
+            ->willReturn($state);
+        
+        return $orderStatusMock;
     }
 }

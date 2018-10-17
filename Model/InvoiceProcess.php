@@ -6,6 +6,7 @@ use Magento\Framework\DB\Transaction;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice as OrderInvoice;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
+use Magento\Sales\Model\ResourceModel\Order\Status\CollectionFactory as OrderStatusCollectionFactory;
 use Magento\Sales\Model\Service\InvoiceServiceFactory;
 
 use Aune\AutoInvoice\Api\InvoiceProcessInterface;
@@ -29,6 +30,11 @@ class InvoiceProcess implements InvoiceProcessInterface
     private $orderCollectionFactory;
     
     /**
+     * @var OrderStatusCollectionFactory
+     */
+    private $orderStatusCollectionFactory;
+    
+    /**
      * @var InvoiceProcessItemInterfaceFactory
      */
     private $invoiceProcessItemFactory;
@@ -44,8 +50,14 @@ class InvoiceProcess implements InvoiceProcessInterface
     private $invoiceServiceFactory;
     
     /**
+     * @var array
+     */
+    private $orderStatusToStateMap;
+    
+    /**
      * @param HelperData $helperData
      * @param OrderCollectionFactory $orderCollectionFactory
+     * @param OrderStatusCollectionFactory $orderStatusCollectionFactory
      * @param InvoiceProcessItemInterfaceFactory $invoiceProcessItemFactory
      * @param Transaction $transaction
      * @param InvoiceServiceFactory $invoiceServiceFactory
@@ -53,12 +65,14 @@ class InvoiceProcess implements InvoiceProcessInterface
     public function __construct(
         HelperData $helperData,
         OrderCollectionFactory $orderCollectionFactory,
+        OrderStatusCollectionFactory $orderStatusCollectionFactory,
         InvoiceProcessItemInterfaceFactory $invoiceProcessItemFactory,
         Transaction $transaction,
         InvoiceServiceFactory $invoiceServiceFactory
     ) {
         $this->helperData = $helperData;
         $this->orderCollectionFactory = $orderCollectionFactory;
+        $this->orderStatusCollectionFactory = $orderStatusCollectionFactory;
         $this->invoiceProcessItemFactory = $invoiceProcessItemFactory;
         $this->transaction = $transaction;
         $this->invoiceServiceFactory = $invoiceServiceFactory;
@@ -106,13 +120,47 @@ class InvoiceProcess implements InvoiceProcessInterface
     }
     
     /**
+     * Returns the order status to state map
+     */
+    private function getOrderStatusToStateMap()
+    {
+        if (!is_null($this->orderStatusToStateMap)) {
+            return $this->orderStatusToStateMap;
+        }
+        
+        $collection = $this->orderStatusCollectionFactory->create()
+            ->joinStates();
+        
+        $this->orderStatusToStateMap = [];
+        foreach ($collection as $status) {
+            $this->orderStatusToStateMap[$status->getStatus()] = $status->getState();
+        }
+        
+        return $this->orderStatusToStateMap;
+    }
+    
+    /**
+     * Return the order state given a status
+     */
+    private function getOrderStateByStatus(string $status)
+    {
+        $map = $this->getOrderStatusToStateMap();
+        return empty($map[$status]) ? false : $map[$status];
+    }
+    
+    /**
      * @inheritdoc
      */
     public function invoice(InvoiceProcessItemInterface $item)
     {
         $order = $item->getOrder();
         
-        $order->setStatus($item->getDestinationStatus());
+        $status = $item->getDestinationStatus();
+        $order->setStatus($status);
+        
+        if ($state = $this->getOrderStateByStatus($status)) {
+            $order->setState($state);
+        }
         
         $invoice = $this->invoiceServiceFactory->create()
             ->prepareInvoice($order);
@@ -122,7 +170,7 @@ class InvoiceProcess implements InvoiceProcessInterface
         $transactionSave = $this->transaction
             ->addObject($invoice)
             ->addObject($order);
-
+        
         $transactionSave->save();
     }
 }
