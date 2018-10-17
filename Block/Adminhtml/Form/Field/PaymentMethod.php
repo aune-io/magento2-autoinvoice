@@ -8,6 +8,7 @@ use Magento\Payment\Model\Config as PaymentConfig;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 
 /**
+ * @codeCoverageIgnore
  * @SuppressWarnings(PHPMD.CamelCaseMethodName)
  */
 class PaymentMethod extends Select

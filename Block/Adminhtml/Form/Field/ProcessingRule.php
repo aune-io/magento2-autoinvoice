@@ -6,6 +6,7 @@ use Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray;
 use Magento\Framework\DataObject;
 
 /**
+ * @codeCoverageIgnore
  * @SuppressWarnings(PHPMD.CamelCaseMethodName)
  */
 class ProcessingRule extends AbstractFieldArray
