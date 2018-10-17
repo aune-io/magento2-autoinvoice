@@ -16,6 +16,9 @@ use Aune\AutoInvoice\Api\InvoiceProcessInterface;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 use Aune\AutoInvoice\Model\InvoiceProcess;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -251,7 +254,7 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
     /**
      * Returns new mock order with given payment method
      */
-    private function getOrderMock(int $id, string $paymentMethod)
+    private function getOrderMock(int $orderId, string $paymentMethod)
     {
         $methodInstanceMock = $this->getMockForAbstractClass(\Magento\Payment\Model\MethodInterface::class);
         
@@ -273,7 +276,7 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
         
         $orderMock->expects(self::any())
             ->method('getId')
-            ->willReturn($id);
+            ->willReturn($orderId);
         
         $orderMock->expects(self::any())
             ->method('getPayment')

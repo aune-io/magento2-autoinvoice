@@ -5,6 +5,9 @@ namespace Aune\AutoInvoice\Block\Adminhtml\Form\Field;
 use Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray;
 use Magento\Framework\DataObject;
 
+/**
+ * @SuppressWarnings(PHPMD.CamelCaseMethodName)
+ */
 class ProcessingRule extends AbstractFieldArray
 {
     /**

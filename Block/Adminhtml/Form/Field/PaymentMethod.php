@@ -7,6 +7,9 @@ use Magento\Framework\View\Element\Html\Select;
 use Magento\Payment\Model\Config as PaymentConfig;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 
+/**
+ * @SuppressWarnings(PHPMD.CamelCaseMethodName)
+ */
 class PaymentMethod extends Select
 {
     /**

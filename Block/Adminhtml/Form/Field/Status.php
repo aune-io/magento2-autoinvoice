@@ -6,6 +6,9 @@ use Magento\Framework\View\Element\Context;
 use Magento\Framework\View\Element\Html\Select;
 use Magento\Sales\Model\Order\Config;
 
+/**
+ * @SuppressWarnings(PHPMD.CamelCaseMethodName)
+ */
 class Status extends Select
 {
     /**
