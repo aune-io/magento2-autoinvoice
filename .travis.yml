@@ -3,10 +3,11 @@ sudo: false
 language: php
 
 php:
-    - 7.0
     - 7.1
+    - 7.2
 
 install:
+    - mkdir -p ~/.composer/
     - echo "{\"http-basic\":{\"repo.magento.com\":{\"username\":\"${MAGENTO_USERNAME}\",\"password\":\"${MAGENTO_PASSWORD}\"}}}" > ~/.composer/auth.json
     - composer install --prefer-dist
     - composer create-project --repository=https://repo.magento.com magento/marketplace-eqp marketplace-eqp
