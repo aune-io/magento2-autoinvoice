@@ -6,8 +6,11 @@
                 <label>Auto invoice</label>
                 <field id="cron_active" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Schedule procedure</label>
-                    <comment>Automatically invoice orders every hour</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="cron_schedule" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Cron expression</label>
+                    <comment>Format: * * * * *</comment>
                 </field>
                 <field id="processing_rules" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Processing Rules</label>

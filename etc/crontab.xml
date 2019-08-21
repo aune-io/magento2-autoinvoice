@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="default">
         <job name="aune_autoinvoice_process" instance="Aune\AutoInvoice\Cron\InvoiceProcess" method="execute">
-            <schedule>0 * * * *</schedule>
+            <config_path>sales/autoinvoice/cron_schedule</config_path>
         </job>
     </group>
 </config>
