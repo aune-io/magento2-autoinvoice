@@ -157,8 +157,9 @@ class InvoiceProcess implements InvoiceProcessInterface
         
         $status = $item->getDestinationStatus();
         $order->setStatus($status);
-        
-        if ($state = $this->getOrderStateByStatus($status)) {
+
+        $state = $this->getOrderStateByStatus($status);
+        if ($state) {
             $order->setState($state);
         }
         

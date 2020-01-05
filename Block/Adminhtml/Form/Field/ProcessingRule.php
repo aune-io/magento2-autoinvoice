@@ -7,6 +7,7 @@ use Magento\Framework\DataObject;
 
 /**
  * @codeCoverageIgnore
+ * @SuppressWarnings(PHPMD.LongVariable)
  * @SuppressWarnings(PHPMD.CamelCaseMethodName)
  */
 class ProcessingRule extends AbstractFieldArray

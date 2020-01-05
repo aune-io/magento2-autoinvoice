@@ -1,4 +1,4 @@
-composer.lock
-marketplace-eqp/
-Test/Unit/logs/
-vendor/
+/composer.lock
+/magento-coding-standard/
+/Test/Unit/logs/
+/vendor/
