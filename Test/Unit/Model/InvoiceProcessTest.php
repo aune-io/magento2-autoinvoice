@@ -2,6 +2,7 @@
 
 namespace Aune\AutoInvoice\Test\Unit\Model;
 
+use ArrayIterator;
 use Magento\Framework\DB\Transaction;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice as OrderInvoice;
@@ -19,6 +20,7 @@ use Aune\AutoInvoice\Helper\Data as HelperData;
 use Aune\AutoInvoice\Model\InvoiceProcess;
 
 /**
+ * @SuppressWarnings(PHPMD.LongVariable)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
@@ -145,7 +147,7 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
         
         $orderCollectionMock->expects(self::once())
             ->method('getIterator')
-            ->willReturn(new \ArrayIterator($orders));
+            ->willReturn(new ArrayIterator($orders));
         
         $items = [];
         foreach ($orders as $order) {
@@ -230,7 +232,7 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
             
             $orderCollectionMock->expects(self::once())
                 ->method('getIterator')
-                ->willReturn(new \ArrayIterator(array_merge($orders, $otherOrders)));
+                ->willReturn(new ArrayIterator(array_merge($orders, $otherOrders)));
             
             $orderCollectionMocks []= $orderCollectionMock;
             
@@ -326,7 +328,7 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
         
         $orderStatusCollectionMock->expects(self::once())
             ->method('getIterator')
-            ->willReturn(new \ArrayIterator($statuses));
+            ->willReturn(new ArrayIterator($statuses));
         
         $orderMock = $this->getMockBuilder(Order::class)
             ->disableOriginalConstructor()
