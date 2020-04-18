@@ -5,6 +5,7 @@ namespace Aune\AutoInvoice\Helper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\DataObject;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Sales\Model\Order\Invoice;
 
 class Data
 {
@@ -14,6 +15,7 @@ class Data
     const RULE_SOURCE_STATUS = 'src_status';
     const RULE_DESTINATION_STATUS = 'dst_status';
     const RULE_PAYMENT_METHOD = 'payment_method';
+    const RULE_CAPTURE_MODE = 'capture_mode';
     const RULE_KEY_SEPARATOR = '|';
     const RULE_PAYMENT_METHOD_ALL = '*';
 
@@ -56,12 +58,22 @@ class Data
         $value = $value ? $this->serializer->unserialize($value) : [];
         
         $rules = [];
-        foreach ($value as $key => $dstStatus) {
+        foreach ($value as $key => $value) {
             $parts = explode(self::RULE_KEY_SEPARATOR, $key);
+            
+            if (is_array($value)) {
+                $dstStatus = $value[self::RULE_DESTINATION_STATUS];
+                $captureMode = $value[self::RULE_CAPTURE_MODE];
+            } else {
+                $dstStatus = $value;
+                $captureMode = Invoice::CAPTURE_OFFLINE;
+            }
+
             $rules []= [
                 self::RULE_SOURCE_STATUS => $parts[0],
                 self::RULE_PAYMENT_METHOD => $parts[1],
                 self::RULE_DESTINATION_STATUS => $dstStatus,
+                self::RULE_CAPTURE_MODE => $captureMode,
             ];
         }
         

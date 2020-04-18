@@ -100,7 +100,8 @@ class InvoiceProcess implements InvoiceProcessInterface
                 
                 $items[$order->getId()] = $this->invoiceProcessItemFactory->create()
                     ->setOrder($order)
-                    ->setDestinationStatus($rule[HelperData::RULE_DESTINATION_STATUS]);
+                    ->setDestinationStatus($rule[HelperData::RULE_DESTINATION_STATUS])
+                    ->setCaptureMode($rule[HelperData::RULE_CAPTURE_MODE]);
             }
         }
         
@@ -165,7 +166,7 @@ class InvoiceProcess implements InvoiceProcessInterface
         
         $invoice = $this->invoiceServiceFactory->create()
             ->prepareInvoice($order);
-        $invoice->setRequestedCaptureCase(OrderInvoice::CAPTURE_OFFLINE);
+        $invoice->setRequestedCaptureCase($item->getCaptureMode());
         $invoice->register();
         
         $transactionSave = $this->transaction

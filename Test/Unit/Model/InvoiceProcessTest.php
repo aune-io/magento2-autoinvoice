@@ -116,6 +116,7 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
     public function testGetItemsToProcess()
     {
         $dstStatus = 'complete';
+        $captureMode = 'offline';
         
         $this->helperDataMock->expects(self::once())
             ->method('getProcessingRules')
@@ -123,6 +124,7 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
                 HelperData::RULE_SOURCE_STATUS => 'processing',
                 HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
                 HelperData::RULE_DESTINATION_STATUS => $dstStatus,
+                HelperData::RULE_CAPTURE_MODE => $captureMode,
             ]]);
         
         $orderCollectionMock = $this->getMockBuilder(OrderCollection::class)
@@ -163,6 +165,11 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
                 ->with($dstStatus)
                 ->willReturn($itemMock);
             
+            $itemMock->expects(self::once())
+                ->method('setCaptureMode')
+                ->with($captureMode)
+                ->willReturn($itemMock);
+            
             $items[$order->getId()] = $itemMock;
         }
         
@@ -183,7 +190,9 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
     {
         $srcStatus = 'processing';
         $dstStatusPaypal = 'complete';
+        $captureModePaypal = 'offline';
         $dstStatusBraintree = 'processing';
+        $captureModeBraintree = 'online';
         
         $this->helperDataMock->expects(self::once())
             ->method('getProcessingRules')
@@ -191,10 +200,12 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
                 HelperData::RULE_SOURCE_STATUS => $srcStatus,
                 HelperData::RULE_PAYMENT_METHOD => 'paypal',
                 HelperData::RULE_DESTINATION_STATUS => $dstStatusPaypal,
+                HelperData::RULE_CAPTURE_MODE => $captureModePaypal,
             ], [
                 HelperData::RULE_SOURCE_STATUS => $srcStatus,
                 HelperData::RULE_PAYMENT_METHOD => 'braintree',
                 HelperData::RULE_DESTINATION_STATUS => $dstStatusBraintree,
+                HelperData::RULE_CAPTURE_MODE => $captureModeBraintree,
             ]]);
         
         $paypalOrders = [
@@ -209,15 +220,19 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
             $this->getOrderMock(5, 'aune_stripe'),
         ];
         
-        $data = [
-            $dstStatusPaypal => $paypalOrders,
-            $dstStatusBraintree => $braintreeOrders,
+        $allData = [
+            [$dstStatusPaypal, $captureModePaypal, $paypalOrders],
+            [$dstStatusBraintree, $captureModeBraintree, $braintreeOrders],
         ];
         
         $items = [];
         $orderCollectionMocks = [];
         
-        foreach ($data as $dstStatus => $orders) {
+        foreach ($allData as $data) {
+            $dstStatus = $data[0];
+            $captureMode = $data[1];
+            $orders = $data[2];
+            
             $orderCollectionMock = $this->getMockBuilder(OrderCollection::class)
                 ->disableOriginalConstructor()
                 ->getMock();
@@ -246,6 +261,11 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
                 $itemMock->expects(self::once())
                     ->method('setDestinationStatus')
                     ->with($dstStatus)
+                    ->willReturn($itemMock);
+                
+                $itemMock->expects(self::once())
+                    ->method('setCaptureMode')
+                    ->with($captureMode)
                     ->willReturn($itemMock);
                 
                 $items[$order->getId()] = $itemMock;
@@ -303,9 +323,10 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
     /**
      * @covers \Aune\AutoInvoice\Model\InvoiceProcess::invoice
      */
-    public function testInvoice()
+    public function testInvoiceOffline()
     {
         $status = 'complete';
+        $captureMode = 'offline';
         
         $orderStatusCollectionMock = $this->getMockBuilder(OrderStatusCollection::class)
             ->disableOriginalConstructor()
@@ -354,6 +375,10 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
             ->method('getDestinationStatus')
             ->willReturn($status);
         
+        $itemMock->expects(self::once())
+            ->method('getCaptureMode')
+            ->willReturn($captureMode);
+        
         $invoiceMock = $this->getMockBuilder(OrderInvoice::class)
             ->disableOriginalConstructor()
             ->setMethods(['setRequestedCaptureCase', 'register'])
@@ -374,7 +399,101 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
         
         $invoiceMock->expects(self::once())
             ->method('setRequestedCaptureCase')
-            ->with(OrderInvoice::CAPTURE_OFFLINE);
+            ->with($captureMode);
+        
+        $invoiceMock->expects(self::once())
+            ->method('register');
+        
+        $this->transactionMock->expects(self::exactly(2))
+            ->method('addObject')
+            ->willReturn($this->transactionMock);
+        
+        $this->transactionMock->expects(self::once())
+            ->method('save');
+        
+        $this->invoiceProcess->invoice($itemMock);
+    }
+    
+    /**
+     * @covers \Aune\AutoInvoice\Model\InvoiceProcess::invoice
+     */
+    public function testInvoiceOnline()
+    {
+        $status = 'complete';
+        $captureMode = 'online';
+        
+        $orderStatusCollectionMock = $this->getMockBuilder(OrderStatusCollection::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        
+        $orderStatusCollectionMock->expects(self::once())
+            ->method('joinStates')
+            ->willReturn($orderStatusCollectionMock);
+        
+        $this->orderStatusCollectionFactoryMock->expects(self::once())
+            ->method('create')
+            ->willReturn($orderStatusCollectionMock);
+        
+        $statuses = [
+            $this->getOrderStatusMock('processing', 'processing'),
+            $this->getOrderStatusMock('pending', 'pending'),
+            $this->getOrderStatusMock('complete', 'complete'),
+            $this->getOrderStatusMock('closed', 'closed'),
+        ];
+        
+        $orderStatusCollectionMock->expects(self::once())
+            ->method('getIterator')
+            ->willReturn(new ArrayIterator($statuses));
+        
+        $orderMock = $this->getMockBuilder(Order::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        
+        $orderMock->expects(self::once())
+            ->method('setStatus')
+            ->with($status)
+            ->willReturn($orderMock);
+        
+        $orderMock->expects(self::once())
+            ->method('setState')
+            ->with($status)
+            ->willReturn($orderMock);
+        
+        $itemMock = $this->getMockForAbstractClass(InvoiceProcessItemInterface::class);
+        
+        $itemMock->expects(self::once())
+            ->method('getOrder')
+            ->willReturn($orderMock);
+        
+        $itemMock->expects(self::once())
+            ->method('getDestinationStatus')
+            ->willReturn($status);
+        
+        $itemMock->expects(self::once())
+            ->method('getCaptureMode')
+            ->willReturn($captureMode);
+        
+        $invoiceMock = $this->getMockBuilder(OrderInvoice::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['setRequestedCaptureCase', 'register'])
+            ->getMock();
+        
+        $invoiceServiceMock = $this->getMockBuilder(InvoiceService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        
+        $invoiceServiceMock->expects(self::once())
+            ->method('prepareInvoice')
+            ->with($orderMock)
+            ->willReturn($invoiceMock);
+        
+        $this->invoiceServiceFactoryMock->expects(self::once())
+            ->method('create')
+            ->willReturn($invoiceServiceMock);
+        
+        $invoiceMock->expects(self::once())
+            ->method('setRequestedCaptureCase')
+            ->with($captureMode);
         
         $invoiceMock->expects(self::once())
             ->method('register');

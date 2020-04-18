@@ -28,6 +28,11 @@ class ProcessingRule extends AbstractFieldArray
     private $paymentMethodRenderer = null;
 
     /**
+     * @var CaptureMode
+     */
+    private $captureModeRenderer = null;
+
+    /**
      * Returns renderer for source status element
      */
     protected function getSrcStatusRenderer()
@@ -75,6 +80,21 @@ class ProcessingRule extends AbstractFieldArray
     }
 
     /**
+     * Returns renderer for capture mode
+     */
+    protected function getCaptureModeRenderer()
+    {
+        if (!$this->captureModeRenderer) {
+            $this->captureModeRenderer = $this->getLayout()->createBlock(
+                CaptureMode::class,
+                '',
+                ['data' => ['is_render_to_js_template' => true]]
+            );
+        }
+        return $this->captureModeRenderer;
+    }
+
+    /**
      * Prepare to render
      * @return void
      */
@@ -101,6 +121,13 @@ class ProcessingRule extends AbstractFieldArray
                 'renderer'  => $this->getDstStatusRenderer(),
             ]
         );
+        $this->addColumn(
+            'capture_mode',
+            [
+                'label'     => __('Capture Mode'),
+                'renderer'  => $this->getCaptureModeRenderer(),
+            ]
+        );
         
         $this->_addAfter = false;
         $this->_addButtonLabel = __('Add Rule');
@@ -117,6 +144,7 @@ class ProcessingRule extends AbstractFieldArray
         $srcStatus = $row->getSrcStatus();
         $dstStatus = $row->getDstStatus();
         $paymentMethod = $row->getPaymentMethod();
+        $captureMode = $row->getCaptureMode();
         
         $options = [];
         if ($srcStatus) {
@@ -127,6 +155,9 @@ class ProcessingRule extends AbstractFieldArray
                 = 'selected="selected"';
             
             $options['option_' . $this->getPaymentMethodRenderer()->calcOptionHash($paymentMethod)]
+                = 'selected="selected"';
+            
+            $options['option_' . $this->getCaptureModeRenderer()->calcOptionHash($captureMode)]
                 = 'selected="selected"';
         }
         
