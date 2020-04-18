@@ -30,7 +30,7 @@ $ bin/magento setup:upgrade
 The configuration of this module is under _Stores > Configuration > Sales > Auto Invoice_.
 There, you will be able to activate processing via cron job, and choose the behaviour of the procedure.
 
-The configuration matrix will allow you to set on for which combinations of status and payment method the extension should invoice the orders, as well as the destination status.
+The configuration matrix will allow you to set on for which combinations of status and payment method the extension should invoice the orders, as well as the destination status and capture mode.
 A configuration example follows.
 
 <img src="https://github.com/aune-io/magento2-autoinvoice/blob/master/screenshots/settings.png" />
@@ -56,7 +56,8 @@ By activating the cron, the procedure will be automatically executed every hour.
 1. Login to the admin
 2. Go to Stores > Configuration > Sales > Auto Invoice
 3. Set _Schedule procedure_ to yes
-4. Clean the cache
+4. Specify a custom cron expression, if needed
+5. Clean the cache
 
 ## Authors, contributors and maintainers
 

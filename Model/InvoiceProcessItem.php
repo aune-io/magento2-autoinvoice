@@ -38,4 +38,20 @@ class InvoiceProcessItem extends DataObject implements InvoiceProcessItemInterfa
     {
         return $this->setData(self::KEY_DESTINATION_STATUS, $status);
     }
+    
+    /**
+     * @inheritdoc
+     */
+    public function getCaptureMode()
+    {
+        return $this->getData(self::KEY_CAPTURE_MODE);
+    }
+    
+    /**
+     * @inheritdoc
+     */
+    public function setCaptureMode(string $captureMode)
+    {
+        return $this->setData(self::KEY_CAPTURE_MODE, $captureMode);
+    }
 }

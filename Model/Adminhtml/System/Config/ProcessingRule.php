@@ -11,6 +11,7 @@ use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Registry;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Sales\Model\Order\Invoice;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 
 class ProcessingRule extends Value
@@ -75,7 +76,11 @@ class ProcessingRule extends Value
                 $data[HelperData::RULE_SOURCE_STATUS],
                 $data[HelperData::RULE_PAYMENT_METHOD],
             ]);
-            $result[$key] = $data[HelperData::RULE_DESTINATION_STATUS];
+
+            $result[$key] = [
+                HelperData::RULE_DESTINATION_STATUS => $data[HelperData::RULE_DESTINATION_STATUS],
+                HelperData::RULE_CAPTURE_MODE => $data[HelperData::RULE_CAPTURE_MODE],
+            ];
         }
         
         $this->setValue($this->serializer->serialize($result));
@@ -108,14 +113,23 @@ class ProcessingRule extends Value
     protected function encodeArrayFieldValue(array $value)
     {
         $result = [];
-        foreach ($value as $key => $dstStatus) {
+        foreach ($value as $key => $value) {
             $parts = explode(HelperData::RULE_KEY_SEPARATOR, $key);
             $id = $this->mathRandom->getUniqueHash('_');
-            
+
+            if (is_array($value)) {
+                $dstStatus = $value[HelperData::RULE_DESTINATION_STATUS];
+                $captureMode = $value[HelperData::RULE_CAPTURE_MODE];
+            } else {
+                $dstStatus = $value;
+                $captureMode = Invoice::CAPTURE_OFFLINE;
+            }
+
             $result[$id] = [
                 HelperData::RULE_SOURCE_STATUS => $parts[0],
                 HelperData::RULE_PAYMENT_METHOD => $parts[1],
                 HelperData::RULE_DESTINATION_STATUS => $dstStatus,
+                HelperData::RULE_CAPTURE_MODE => $captureMode,
             ];
         }
         return $result;

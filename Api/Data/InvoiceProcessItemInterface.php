@@ -6,6 +6,7 @@ interface InvoiceProcessItemInterface
 {
     const KEY_ORDER = 'order';
     const KEY_DESTINATION_STATUS = 'destination_status';
+    const KEY_CAPTURE_MODE = 'capture_mode';
     
     /**
      * Returns the order to invoice
@@ -34,4 +35,18 @@ interface InvoiceProcessItemInterface
      * @returns $this
      */
     public function setDestinationStatus(string $status);
+    
+    /**
+     * Returns the capture mode
+     * 
+     * @returns string
+     */
+    public function getCaptureMode();
+    
+    /**
+     * Sets the capture mode
+     * 
+     * @returns $this
+     */
+    public function setCaptureMode(string $captureMode);
 }
