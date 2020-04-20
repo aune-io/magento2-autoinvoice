@@ -9,8 +9,8 @@
     ],
     "require": {
         "php": "~7.1.0|~7.2.0|~7.3.0",
-        "magento/framework": "102.0.*",
-        "magento/module-sales": "102.0.*"
+        "magento/framework": "101.0.*|102.0.*",
+        "magento/module-sales": "101.0.*|102.0.*"
     },
     "require-dev": {
         "phpunit/phpunit": "~6.5.13",
