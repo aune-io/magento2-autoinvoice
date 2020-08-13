@@ -16,7 +16,7 @@ class ProcessingRule extends AbstractFieldArray
      * @var Status
      */
     private $srcStatusRenderer = null;
-    
+
     /**
      * @var Status
      */
@@ -32,6 +32,12 @@ class ProcessingRule extends AbstractFieldArray
      */
     private $captureModeRenderer = null;
 
+
+    /**
+     * @var Email
+     */
+    private $emailRenderer = null;
+
     /**
      * Returns renderer for source status element
      */
@@ -44,10 +50,10 @@ class ProcessingRule extends AbstractFieldArray
                 ['data' => ['is_render_to_js_template' => true]]
             );
         }
-        
+
         return $this->srcStatusRenderer;
     }
-    
+
     /**
      * Returns renderer for destination status element
      */
@@ -60,7 +66,7 @@ class ProcessingRule extends AbstractFieldArray
                 ['data' => ['is_render_to_js_template' => true]]
             );
         }
-        
+
         return $this->dstStatusRenderer;
     }
 
@@ -95,6 +101,20 @@ class ProcessingRule extends AbstractFieldArray
     }
 
     /**
+     * Returns renderer for E-Mail sending
+     */
+    protected function getEmailRenderer()
+    {
+        if (!$this->emailRenderer) {
+            $this->emailRenderer = $this->getLayout()->createBlock(
+                Email::class,
+                '',
+                ['data' => ['is_render_to_js_template' => true]]
+            );
+        }
+        return $this->emailRenderer;
+    }
+    /**
      * Prepare to render
      * @return void
      */
@@ -128,7 +148,14 @@ class ProcessingRule extends AbstractFieldArray
                 'renderer'  => $this->getCaptureModeRenderer(),
             ]
         );
-        
+        $this->addColumn(
+            'send_email',
+            [
+                'label'     => __('Send E-Mail'),
+                'renderer'  => $this->getEmailRenderer(),
+            ]
+        );
+
         $this->_addAfter = false;
         $this->_addButtonLabel = __('Add Rule');
     }
@@ -145,7 +172,7 @@ class ProcessingRule extends AbstractFieldArray
         $dstStatus = $row->getDstStatus();
         $paymentMethod = $row->getPaymentMethod();
         $captureMode = $row->getCaptureMode();
-        
+
         $options = [];
         if ($srcStatus) {
             $options['option_' . $this->getSrcStatusRenderer()->calcOptionHash($srcStatus)]
@@ -153,14 +180,14 @@ class ProcessingRule extends AbstractFieldArray
 
             $options['option_' . $this->getDstStatusRenderer()->calcOptionHash($dstStatus)]
                 = 'selected="selected"';
-            
+
             $options['option_' . $this->getPaymentMethodRenderer()->calcOptionHash($paymentMethod)]
                 = 'selected="selected"';
-            
+
             $options['option_' . $this->getCaptureModeRenderer()->calcOptionHash($captureMode)]
                 = 'selected="selected"';
         }
-        
+
         $row->setData('option_extra_attrs', $options);
     }
 }
