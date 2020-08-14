@@ -150,7 +150,7 @@ class ProcessingRule extends AbstractFieldArray
         $this->addColumn(
             'email',
             [
-                'label'     => __('Send E-Mail'),
+                'label'     => __('Send invoice to customer'),
                 'renderer'  => $this->getEmailRenderer(),
             ]
         );
