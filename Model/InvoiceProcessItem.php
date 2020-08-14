@@ -14,7 +14,7 @@ class InvoiceProcessItem extends DataObject implements InvoiceProcessItemInterfa
     {
         return $this->getData(self::KEY_ORDER);
     }
-    
+
     /**
      * @inheritdoc
      */
@@ -22,7 +22,7 @@ class InvoiceProcessItem extends DataObject implements InvoiceProcessItemInterfa
     {
         return $this->setData(self::KEY_ORDER, $order);
     }
-    
+
     /**
      * @inheritdoc
      */
@@ -30,7 +30,7 @@ class InvoiceProcessItem extends DataObject implements InvoiceProcessItemInterfa
     {
         return $this->getData(self::KEY_DESTINATION_STATUS);
     }
-    
+
     /**
      * @inheritdoc
      */
@@ -38,7 +38,7 @@ class InvoiceProcessItem extends DataObject implements InvoiceProcessItemInterfa
     {
         return $this->setData(self::KEY_DESTINATION_STATUS, $status);
     }
-    
+
     /**
      * @inheritdoc
      */
@@ -46,12 +46,28 @@ class InvoiceProcessItem extends DataObject implements InvoiceProcessItemInterfa
     {
         return $this->getData(self::KEY_CAPTURE_MODE);
     }
-    
+
     /**
      * @inheritdoc
      */
     public function setCaptureMode(string $captureMode)
     {
         return $this->setData(self::KEY_CAPTURE_MODE, $captureMode);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEmail()
+    {
+        return $this->getData(self::KEY_EMAIL);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEmail(string $email)
+    {
+        return $this->setData(self::KEY_EMAIL, $email);
     }
 }

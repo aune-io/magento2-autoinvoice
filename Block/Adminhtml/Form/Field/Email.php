@@ -4,7 +4,6 @@ namespace Aune\AutoInvoice\Block\Adminhtml\Form\Field;
 
 use Magento\Framework\View\Element\Context;
 use Magento\Framework\View\Element\Html\Select;
-use Magento\Sales\Model\Order\Invoice;
 
 /**
  * @codeCoverageIgnore
@@ -20,10 +19,10 @@ class Email extends Select
     protected function _toHtml()
     {
         $options = [[
-            'value' => true,
+            'value' => 'true',
             'label' => __('Yes'),
         ], [
-            'value' => false,
+            'value' => 'false',
             'label' => __('No'),
         ]];
 

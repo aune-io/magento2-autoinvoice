@@ -50,7 +50,7 @@ class ProcessingRule extends Value
     ) {
         $this->mathRandom = $mathRandom;
         $this->serializer = $serializer;
-        
+
         parent::__construct($context, $registry, $config, $cacheTypeList, $resource, $resourceCollection, $data);
     }
 
@@ -63,31 +63,32 @@ class ProcessingRule extends Value
     {
         $value = $this->getValue();
         $result = [];
-        
         foreach ($value as $data) {
             if (empty($data[HelperData::RULE_SOURCE_STATUS])
                 || empty($data[HelperData::RULE_PAYMENT_METHOD])
                 || empty($data[HelperData::RULE_DESTINATION_STATUS])) {
-                
+
                 continue;
             }
-            
+
             $key = implode(HelperData::RULE_KEY_SEPARATOR, [
                 $data[HelperData::RULE_SOURCE_STATUS],
                 $data[HelperData::RULE_PAYMENT_METHOD],
+                $data[HelperData::RULE_EMAIL],
             ]);
 
             $result[$key] = [
                 HelperData::RULE_DESTINATION_STATUS => $data[HelperData::RULE_DESTINATION_STATUS],
                 HelperData::RULE_CAPTURE_MODE => $data[HelperData::RULE_CAPTURE_MODE],
+                HelperData::RULE_EMAIL => $data[HelperData::RULE_EMAIL],
             ];
         }
-        
+
         $this->setValue($this->serializer->serialize($result));
-        
+
         return $this;
     }
-    
+
     /**
      * Process data after load
      *
@@ -103,7 +104,7 @@ class ProcessingRule extends Value
         }
         return $this;
     }
-    
+
     /**
      * Encode value to be used in \Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray
      *
@@ -114,12 +115,14 @@ class ProcessingRule extends Value
     {
         $result = [];
         foreach ($value as $key => $value) {
+            
             $parts = explode(HelperData::RULE_KEY_SEPARATOR, $key);
             $id = $this->mathRandom->getUniqueHash('_');
 
             if (is_array($value)) {
                 $dstStatus = $value[HelperData::RULE_DESTINATION_STATUS];
                 $captureMode = $value[HelperData::RULE_CAPTURE_MODE];
+                $email = $value[HelperData::RULE_EMAIL];
             } else {
                 $dstStatus = $value;
                 $captureMode = Invoice::CAPTURE_OFFLINE;
@@ -130,6 +133,7 @@ class ProcessingRule extends Value
                 HelperData::RULE_PAYMENT_METHOD => $parts[1],
                 HelperData::RULE_DESTINATION_STATUS => $dstStatus,
                 HelperData::RULE_CAPTURE_MODE => $captureMode,
+                HelperData::RULE_EMAIL => $email,
             ];
         }
         return $result;

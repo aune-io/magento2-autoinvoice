@@ -32,7 +32,6 @@ class ProcessingRule extends AbstractFieldArray
      */
     private $captureModeRenderer = null;
 
-
     /**
      * @var Email
      */
@@ -149,7 +148,7 @@ class ProcessingRule extends AbstractFieldArray
             ]
         );
         $this->addColumn(
-            'send_email',
+            'email',
             [
                 'label'     => __('Send E-Mail'),
                 'renderer'  => $this->getEmailRenderer(),
@@ -172,6 +171,7 @@ class ProcessingRule extends AbstractFieldArray
         $dstStatus = $row->getDstStatus();
         $paymentMethod = $row->getPaymentMethod();
         $captureMode = $row->getCaptureMode();
+        $email = $row->getEmail();
 
         $options = [];
         if ($srcStatus) {
@@ -185,6 +185,9 @@ class ProcessingRule extends AbstractFieldArray
                 = 'selected="selected"';
 
             $options['option_' . $this->getCaptureModeRenderer()->calcOptionHash($captureMode)]
+                = 'selected="selected"';
+
+            $options['option_' . $this->getEmailRenderer()->calcOptionHash($email)]
                 = 'selected="selected"';
         }
 
