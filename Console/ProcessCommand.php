@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use Magento\Framework\App\State;
-use Aune\AutoInvoice\Api\InvoiceProcessInterface;
+use Aune\AutoInvoice\Api\InvoiceProcessInterfaceFactory;
 
 class ProcessCommand extends Command
 {
@@ -29,23 +29,23 @@ class ProcessCommand extends Command
     private $logger;
     
     /**
-     * @var InvoiceProcessInterface
+     * @var InvoiceProcessInterfaceFactory
      */
-    private $invoiceProcess;
+    private $invoiceProcessFactory;
     
     /**
      * @param State $state
      * @param LoggerInterface $logger
-     * @param InvoiceProcessInterface $invoiceProcess
+     * @param InvoiceProcessInterfaceFactory $invoiceProcessFactory
      */
     public function __construct(
         State $state,
         LoggerInterface $logger,
-    	InvoiceProcessInterface $invoiceProcess
+    	InvoiceProcessInterfaceFactory $invoiceProcessFactory
     ) {
         $this->state = $state;
         $this->logger = $logger;
-        $this->invoiceProcess = $invoiceProcess;
+        $this->invoiceProcessFactory = $invoiceProcessFactory;
         
         parent::__construct();
     }
@@ -94,7 +94,8 @@ class ProcessCommand extends Command
             $output->writeln('<fg=yellow>This is a dry run, no orders will actually be invoiced.</>');
         }
         
-        $items = $this->invoiceProcess->getItemsToProcess();
+        $invoiceProcess = $this->invoiceProcessFactory->create();
+        $items = $invoiceProcess->getItemsToProcess();
         foreach ($items as $item) {
             try {
                 
@@ -111,7 +112,7 @@ class ProcessCommand extends Command
                 }
                 
                 $this->logger->info($message);
-			    $this->invoiceProcess->invoice($item);
+			    $invoiceProcess->invoice($item);
 			    
         	} catch (\Exception $ex) {
         		$output->writeln(sprintf(
