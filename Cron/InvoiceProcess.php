@@ -3,7 +3,7 @@
 namespace Aune\AutoInvoice\Cron;
 
 use Psr\Log\LoggerInterface;
-use Aune\AutoInvoice\Api\InvoiceProcessInterface;
+use Aune\AutoInvoice\Api\InvoiceProcessInterfaceFactory;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 
 class InvoiceProcess
@@ -19,23 +19,23 @@ class InvoiceProcess
     private $logger;
     
     /**
-     * @var InvoiceProcessInterface
+     * @var InvoiceProcessInterfaceFactory
      */
-    private $invoiceProcess;
+    private $invoiceProcessFactory;
     
     /**
      * @param HelperData $helperData
      * @param LoggerInterface $logger
-     * @param InvoiceProcessInterface $invoiceProcess
+     * @param InvoiceProcessInterfaceFactory $invoiceProcessFactory
      */
     public function __construct(
         HelperData $helperData,
         LoggerInterface $logger,
-    	InvoiceProcessInterface $invoiceProcess
+    	InvoiceProcessInterfaceFactory $invoiceProcessFactory
     ) {
         $this->helperData = $helperData;
         $this->logger = $logger;
-        $this->invoiceProcess = $invoiceProcess;
+        $this->invoiceProcessFactory = $invoiceProcessFactory;
     }
     
     /**
@@ -48,7 +48,8 @@ class InvoiceProcess
         }
         
         $this->logger->info('Starting auto invoice procedure.');
-        $items = $this->invoiceProcess->getItemsToProcess();
+        $invoiceProcess = $this->invoiceProcessFactory->create();
+        $items = $invoiceProcess->getItemsToProcess();
         
         foreach ($items as $item) {
             try {
@@ -58,7 +59,7 @@ class InvoiceProcess
     				'Invoicing order #%s',
     				$order->getIncrementId()
     			));
-    			$this->invoiceProcess->invoice($item);
+    			$invoiceProcess->invoice($item);
 			    
         	} catch (\Exception $ex) {
         		$this->logger->critical($ex->getMessage());
