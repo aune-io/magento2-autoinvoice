@@ -69,6 +69,7 @@ class Data
             } else {
                 $dstStatus = $value;
                 $captureMode = Invoice::CAPTURE_OFFLINE;
+                $email = '';
             }
 
             $rules []= [
