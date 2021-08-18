@@ -126,6 +126,7 @@ class ProcessingRule extends Value
             } else {
                 $dstStatus = $value;
                 $captureMode = Invoice::CAPTURE_OFFLINE;
+                $email = '';
             }
 
             $result[$id] = [
