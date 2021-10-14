@@ -2,7 +2,7 @@
 
 namespace Aune\AutoInvoice\Model;
 
-use Magento\Framework\DB\Transaction;
+use Magento\Framework\DB\TransactionFactory;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice as OrderInvoice;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
@@ -42,9 +42,9 @@ class InvoiceProcess implements InvoiceProcessInterface
     private $invoiceProcessItemFactory;
 
     /**
-     * @var Transaction
+     * @var TransactionFactory
      */
-    private $transaction;
+    private $transactionFactory;
 
     /**
      * @var InvoiceServiceFactory
@@ -71,25 +71,25 @@ class InvoiceProcess implements InvoiceProcessInterface
      * @param OrderCollectionFactory $orderCollectionFactory
      * @param OrderStatusCollectionFactory $orderStatusCollectionFactory
      * @param InvoiceProcessItemInterfaceFactory $invoiceProcessItemFactory
-     * @param Transaction $transaction
+     * @param TransactionFactory $transactionFactory
      * @param InvoiceServiceFactory $invoiceServiceFactory
      * @param InvoiceSender $invoiceSender
      */
     public function __construct(
-        HelperData $helperData,
-        OrderCollectionFactory $orderCollectionFactory,
-        OrderStatusCollectionFactory $orderStatusCollectionFactory,
+        HelperData                         $helperData,
+        OrderCollectionFactory             $orderCollectionFactory,
+        OrderStatusCollectionFactory       $orderStatusCollectionFactory,
         InvoiceProcessItemInterfaceFactory $invoiceProcessItemFactory,
-        Transaction $transaction,
-        InvoiceServiceFactory $invoiceServiceFactory,
-        InvoiceSender $invoiceSender,
-        LoggerInterface $logger
+        TransactionFactory                 $transactionFactory,
+        InvoiceServiceFactory              $invoiceServiceFactory,
+        InvoiceSender                      $invoiceSender,
+        LoggerInterface                    $logger
     ) {
         $this->helperData = $helperData;
         $this->orderCollectionFactory = $orderCollectionFactory;
         $this->orderStatusCollectionFactory = $orderStatusCollectionFactory;
         $this->invoiceProcessItemFactory = $invoiceProcessItemFactory;
-        $this->transaction = $transaction;
+        $this->transactionFactory = $transactionFactory;
         $this->invoiceServiceFactory = $invoiceServiceFactory;
         $this->invoiceSender = $invoiceSender;
         $this->_logger = $logger;
@@ -187,7 +187,7 @@ class InvoiceProcess implements InvoiceProcessInterface
         $invoice->setRequestedCaptureCase($item->getCaptureMode());
         $invoice->register();
 
-        $transactionSave = $this->transaction
+        $transactionSave = $this->transactionFactory->create()
             ->addObject($invoice)
             ->addObject($order);
 
