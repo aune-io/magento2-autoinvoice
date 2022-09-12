@@ -187,6 +187,14 @@ class InvoiceProcess implements InvoiceProcessInterface
         $invoice->setRequestedCaptureCase($item->getCaptureMode());
         $invoice->register();
 
+        if ($order->getStatus() !== $item->getDestinationStatus()) {
+            // Capture may overwrite order status, reset it
+            $order->setStatus($item->getDestinationStatus());
+            if ($state) {
+                $order->setState($state);
+            }
+        }
+
         $transactionSave = $this->transactionFactory->create()
             ->addObject($invoice)
             ->addObject($order);
