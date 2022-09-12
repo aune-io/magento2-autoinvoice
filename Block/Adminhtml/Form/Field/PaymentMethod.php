@@ -4,7 +4,7 @@ namespace Aune\AutoInvoice\Block\Adminhtml\Form\Field;
 
 use Magento\Framework\View\Element\Context;
 use Magento\Framework\View\Element\Html\Select;
-use Magento\Payment\Model\Config as PaymentConfig;
+use Magento\Payment\Helper\Data as PaymentHelper;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 
 /**
@@ -16,19 +16,19 @@ class PaymentMethod extends Select
     /**
      * @var PaymentConfig
      */
-    private $paymentConfig;
-    
+    private $paymentHelper;
+
     /**
      * @param Context $context
      * @param array $data
      */
     public function __construct(
         Context $context,
-        PaymentConfig $paymentConfig,
+        PaymentHelper $paymentHelper,
         array $data = []
     ) {
-        $this->paymentConfig = $paymentConfig;
-        
+        $this->paymentHelper = $paymentHelper;
+
         parent::__construct($context, $data);
     }
 
@@ -43,18 +43,12 @@ class PaymentMethod extends Select
             $options = [
                 ['value' => HelperData::RULE_PAYMENT_METHOD_ALL, 'label' => __('Any')]
             ];
-            
-            $paymentMethods = $this->paymentConfig->getActiveMethods();
-            foreach ($paymentMethods as $code => $model) {
-                $options []= [
-                    'value' => $code,
-                    'label' => $model->getTitle() ?: $code,
-                ];
-            }
-            
+
+            $options = array_merge($options, $this->paymentHelper->getPaymentMethodList(true, true));
+
             $this->setOptions($options);
         }
-        
+
         return parent::_toHtml();
     }
 
