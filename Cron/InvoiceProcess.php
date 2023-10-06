@@ -31,7 +31,7 @@ class InvoiceProcess
     public function __construct(
         HelperData $helperData,
         LoggerInterface $logger,
-    	InvoiceProcessInterfaceFactory $invoiceProcessFactory
+        InvoiceProcessInterfaceFactory $invoiceProcessFactory
     ) {
         $this->helperData = $helperData;
         $this->logger = $logger;
@@ -56,14 +56,14 @@ class InvoiceProcess
                 
                 $order = $item->getOrder();
                 $this->logger->info(sprintf(
-    				'Invoicing order #%s',
-    				$order->getIncrementId()
-    			));
-    			$invoiceProcess->invoice($item);
-			    
-        	} catch (\Exception $ex) {
-        		$this->logger->critical($ex->getMessage());
-        	}
+                    'Invoicing order #%s',
+                    $order->getIncrementId()
+                ));
+                $invoiceProcess->invoice($item);
+                
+            } catch (\Exception $ex) {
+                $this->logger->critical($ex->getMessage());
+            }
         }
         
         $this->logger->info('Auto invoice procedure completed.');

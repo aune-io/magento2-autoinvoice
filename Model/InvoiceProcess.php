@@ -202,12 +202,12 @@ class InvoiceProcess implements InvoiceProcessInterface
         $transactionSave->save();
         $email = $item->getEmail();
         if ($email=='true') {
-          try {
-            $this->invoiceSender->send($invoice);
-            $invoice->setEmailSent(true);
-          } catch (\Exception $e) {
-            $this->_logger->debug("Error while sending invoice-E-Mail: ".$e);
-          }
+            try {
+                $this->invoiceSender->send($invoice);
+                $invoice->setEmailSent(true);
+            } catch (\Exception $e) {
+                $this->_logger->debug("Error while sending invoice-E-Mail: ".$e);
+            }
         }
     }
 }

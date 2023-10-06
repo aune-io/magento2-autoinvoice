@@ -16,8 +16,8 @@ class ProcessCommand extends Command
 {
     const COMMAND_NAME = 'aune:autoinvoice:process';
     const COMMAND_DESCRIPTION = 'Create invoices according to configuration.';
-	const OPTION_DRY_RUN = 'dry-run';
-	
+    const OPTION_DRY_RUN = 'dry-run';
+    
     /**
      * @var State
      */
@@ -41,7 +41,7 @@ class ProcessCommand extends Command
     public function __construct(
         State $state,
         LoggerInterface $logger,
-    	InvoiceProcessInterfaceFactory $invoiceProcessFactory
+        InvoiceProcessInterfaceFactory $invoiceProcessFactory
     ) {
         $this->state = $state;
         $this->logger = $logger;
@@ -101,28 +101,28 @@ class ProcessCommand extends Command
                 
                 $order = $item->getOrder();
                 $message = sprintf(
-    				'Invoicing order #%s %s',
-    				$order->getIncrementId(),
-    				$item->getCaptureMode()
-    			);
-    			$output->writeln('<fg=green>' . $message . '</>');
-    			
+                    'Invoicing order #%s %s',
+                    $order->getIncrementId(),
+                    $item->getCaptureMode()
+                );
+                $output->writeln('<fg=green>' . $message . '</>');
+                
                 if ($dryRun) {
                     continue;
                 }
                 
                 $this->logger->info($message);
-			    $invoiceProcess->invoice($item);
-			    
-        	} catch (\Exception $ex) {
-        		$output->writeln(sprintf(
-    				'<fg=red>%s</>',
-    				$ex->getMessage()
-    			));
-    			$this->logger->critical($ex->getMessage());
-        	}
+                $invoiceProcess->invoice($item);
+                
+            } catch (\Exception $ex) {
+                $output->writeln(sprintf(
+                    '<fg=red>%s</>',
+                    $ex->getMessage()
+                ));
+                $this->logger->critical($ex->getMessage());
+            }
         }
         
-    	$output->writeln('<fg=green>Auto invoice procedure completed.</>');
+        $output->writeln('<fg=green>Auto invoice procedure completed.</>');
     }
 }
