@@ -115,6 +115,7 @@ class ProcessingRule extends AbstractFieldArray
     }
     /**
      * Prepare to render
+     *
      * @return void
      */
     protected function _prepareToRender()
@@ -174,20 +175,30 @@ class ProcessingRule extends AbstractFieldArray
         $email = $row->getEmail();
 
         $options = [];
+        /** @var Magento\Framework\View\Element\BlockInterface */
+        $statusRenderer = $this->getSrcStatusRenderer();
+        /** @var Magento\Framework\View\Element\BlockInterface */
+        $dstRenderer = $this->getDstStatusRenderer();
+        /** @var Magento\Framework\View\Element\BlockInterface */
+        $paymentMethodRenderer = $this->getPaymentMethodRenderer();
+        /** @var Magento\Framework\View\Element\BlockInterface */
+        $getCaptureModeRenderer = $this->getCaptureModeRenderer();
+        /** @var Magento\Framework\View\Element\BlockInterface */
+        $emaiRenderer = $this->getEmailRenderer();
         if ($srcStatus) {
-            $options['option_' . $this->getSrcStatusRenderer()->calcOptionHash($srcStatus)]
+            $options['option_' . $statusRenderer->calcOptionHash($srcStatus)]
                 = 'selected="selected"';
 
-            $options['option_' . $this->getDstStatusRenderer()->calcOptionHash($dstStatus)]
+            $options['option_' . $dstRenderer->calcOptionHash($dstStatus)]
                 = 'selected="selected"';
 
-            $options['option_' . $this->getPaymentMethodRenderer()->calcOptionHash($paymentMethod)]
+            $options['option_' . $paymentMethodRenderer->calcOptionHash($paymentMethod)]
                 = 'selected="selected"';
 
-            $options['option_' . $this->getCaptureModeRenderer()->calcOptionHash($captureMode)]
+            $options['option_' . $getCaptureModeRenderer->calcOptionHash($captureMode)]
                 = 'selected="selected"';
 
-            $options['option_' . $this->getEmailRenderer()->calcOptionHash($email)]
+            $options['option_' . $emaiRenderer->calcOptionHash($email)]
                 = 'selected="selected"';
         }
 

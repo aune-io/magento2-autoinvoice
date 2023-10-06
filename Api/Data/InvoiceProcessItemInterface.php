@@ -4,10 +4,10 @@ namespace Aune\AutoInvoice\Api\Data;
 
 interface InvoiceProcessItemInterface
 {
-    const KEY_ORDER = 'order';
-    const KEY_DESTINATION_STATUS = 'destination_status';
-    const KEY_CAPTURE_MODE = 'capture_mode';
-    const KEY_EMAIL = 'email';
+    public const KEY_ORDER = 'order';
+    public const KEY_DESTINATION_STATUS = 'destination_status';
+    public const KEY_CAPTURE_MODE = 'capture_mode';
+    public const KEY_EMAIL = 'email';
 
     /**
      * Returns the order to invoice
@@ -18,6 +18,8 @@ interface InvoiceProcessItemInterface
 
     /**
      * Sets the order to invoice
+     *
+     * @param OrderInterface $order
      *
      * @returns $this
      */
@@ -33,6 +35,8 @@ interface InvoiceProcessItemInterface
     /**
      * Sets the destination status
      *
+     * @param string $status
+     *
      * @returns $this
      */
     public function setDestinationStatus(string $status);
@@ -47,10 +51,11 @@ interface InvoiceProcessItemInterface
     /**
      * Sets the capture mode
      *
+     * @param string $captureMode
+     *
      * @returns $this
      */
     public function setCaptureMode(string $captureMode);
-
 
     /**
      * Returns E-Mail settings
@@ -61,6 +66,8 @@ interface InvoiceProcessItemInterface
 
     /**
      * Sets E-Mail settings
+     *
+     * @param string $email
      *
      * @returns $this
      */

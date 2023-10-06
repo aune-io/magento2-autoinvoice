@@ -32,10 +32,10 @@ class ProcessingRule extends Value
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $config
      * @param \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList
      * @param \Magento\Framework\Math\Random $mathRandom
+     * @param \Magento\Framework\Serialize\Serializer\Json $serializer
      * @param \Magento\Framework\Model\ResourceModel\AbstractResource $resource
      * @param \Magento\Framework\Data\Collection\AbstractDb $resourceCollection
      * @param array $data
-     * @param \Magento\Framework\Serialize\Serializer\Json $serializer
      */
     public function __construct(
         Context $context,
@@ -61,6 +61,7 @@ class ProcessingRule extends Value
      */
     public function beforeSave()
     {
+        /** @var array */
         $value = $this->getValue();
         $result = [];
         foreach ($value as $data) {
@@ -115,7 +116,7 @@ class ProcessingRule extends Value
     {
         $result = [];
         foreach ($value as $key => $value) {
-            
+
             $parts = explode(HelperData::RULE_KEY_SEPARATOR, $key);
             $id = $this->mathRandom->getUniqueHash('_');
 
