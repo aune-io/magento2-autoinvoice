@@ -11,8 +11,8 @@ Magento 2 procedure to automatically invoice orders in a given status.
 ## System requirements
 This extension supports the following versions of Magento:
 
-*	Community Edition (CE) versions 2.2.x and 2.3.x
-*	Enterprise Edition (EE) versions 2.2.x and 2.3.x
+*	Community Edition (CE) versions 2.2.x and 2.3.x and 2.4.x
+*	Enterprise Edition (EE) versions 2.2.x and 2.3.x and 2.4.x
 
 ## Installation
 1. Require the module via Composer

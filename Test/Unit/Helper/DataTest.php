@@ -16,7 +16,7 @@ class DataTest extends \PHPUnit\Framework\TestCase
      * @var ScopeConfigInterface|PHPUnit_Framework_MockObject_MockObject
      */
     private $scopeConfigMock;
-    
+
     /**
      * @var HelperData
      */
@@ -25,7 +25,7 @@ class DataTest extends \PHPUnit\Framework\TestCase
     protected function setUp()
     {
         $this->scopeConfigMock = $this->getMockForAbstractClass(ScopeConfigInterface::class);
-        
+
         $this->helperData = new HelperData(
             $this->scopeConfigMock,
             new Json()
@@ -41,25 +41,28 @@ class DataTest extends \PHPUnit\Framework\TestCase
             ->method($isFlag ? 'isSetFlag' : 'getValue')
             ->with($key)
             ->willReturn($in);
-        
+
         self::assertEquals(
             $out,
             $this->helperData->$method()
         );
     }
-    
+
     /**
      * @return array
      */
     public function getConfigDataProvider()
     {
         return [
-            ['key' => HelperData::XML_PATH_CRON_ENABLED, 'isFlag' => true, 'method' => 'isCronEnabled', 'in' => '1', 'out' => true],
-            ['key' => HelperData::XML_PATH_CRON_ENABLED, 'isFlag' => true, 'method' => 'isCronEnabled', 'in' => '0', 'out' => false],
-            ['key' => HelperData::XML_PATH_PROCESSING_RULES, 'isFlag' => false, 'method' => 'getProcessingRules', 'in' => '', 'out' => []],
+            ['key' => HelperData::XML_PATH_CRON_ENABLED,
+            'isFlag' => true, 'method' => 'isCronEnabled', 'in' => '1', 'out' => true],
+            ['key' => HelperData::XML_PATH_CRON_ENABLED,
+            'isFlag' => true, 'method' => 'isCronEnabled', 'in' => '0', 'out' => false],
+            ['key' => HelperData::XML_PATH_PROCESSING_RULES,
+            'isFlag' => false, 'method' => 'getProcessingRules', 'in' => '', 'out' => []],
         ];
     }
-    
+
     /**
      * @dataProvider getProcessingRulesDataProvider
      */
@@ -69,13 +72,13 @@ class DataTest extends \PHPUnit\Framework\TestCase
             ->method('getValue')
             ->with(HelperData::XML_PATH_PROCESSING_RULES)
             ->willReturn($in);
-        
+
         self::assertEquals(
             $out,
             $this->helperData->getProcessingRules()
         );
     }
-    
+
     /**
      * @return array
      */

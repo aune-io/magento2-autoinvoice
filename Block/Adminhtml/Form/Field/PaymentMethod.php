@@ -20,6 +20,7 @@ class PaymentMethod extends Select
 
     /**
      * @param Context $context
+     * @param PaymentHelper $paymentHelper
      * @param array $data
      */
     public function __construct(

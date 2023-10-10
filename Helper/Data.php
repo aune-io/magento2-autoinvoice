@@ -9,16 +9,15 @@ use Magento\Sales\Model\Order\Invoice;
 
 class Data
 {
-    const XML_PATH_CRON_ENABLED = 'sales/autoinvoice/cron_active';
-    const XML_PATH_PROCESSING_RULES = 'sales/autoinvoice/processing_rules';
-
-    const RULE_SOURCE_STATUS = 'src_status';
-    const RULE_DESTINATION_STATUS = 'dst_status';
-    const RULE_PAYMENT_METHOD = 'payment_method';
-    const RULE_CAPTURE_MODE = 'capture_mode';
-    const RULE_KEY_SEPARATOR = '|';
-    const RULE_PAYMENT_METHOD_ALL = '*';
-    const RULE_EMAIL = 'email';
+    public const XML_PATH_CRON_ENABLED = 'sales/autoinvoice/cron_active';
+    public const XML_PATH_PROCESSING_RULES = 'sales/autoinvoice/processing_rules';
+    public const RULE_SOURCE_STATUS = 'src_status';
+    public const RULE_DESTINATION_STATUS = 'dst_status';
+    public const RULE_PAYMENT_METHOD = 'payment_method';
+    public const RULE_CAPTURE_MODE = 'capture_mode';
+    public const RULE_KEY_SEPARATOR = '|';
+    public const RULE_PAYMENT_METHOD_ALL = '*';
+    public const RULE_EMAIL = 'email';
 
     /**
      * @var ScopeConfigInterface

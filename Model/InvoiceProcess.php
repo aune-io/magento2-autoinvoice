@@ -74,6 +74,7 @@ class InvoiceProcess implements InvoiceProcessInterface
      * @param TransactionFactory $transactionFactory
      * @param InvoiceServiceFactory $invoiceServiceFactory
      * @param InvoiceSender $invoiceSender
+     * @param LoggerInterface $logger
      */
     public function __construct(
         HelperData                         $helperData,
@@ -128,11 +129,15 @@ class InvoiceProcess implements InvoiceProcessInterface
 
     /**
      * Returns payment method code of the given order
+     *
+     * @param Order $order
      */
     private function getPaymentMethodCode(Order $order)
     {
         try {
-            return $order->getPayment()->getMethodInstance()->getCode();
+            /** @var OrderPaymentInterface */
+            $payment = $order->getPayment();
+            return $payment->getMethodInstance()->getCode();
         } catch (\Exception $ex) {
             return '';
         }
@@ -143,7 +148,7 @@ class InvoiceProcess implements InvoiceProcessInterface
      */
     private function getOrderStatusToStateMap()
     {
-        if (!is_null($this->orderStatusToStateMap)) {
+        if ($this->orderStatusToStateMap != null) {
             return $this->orderStatusToStateMap;
         }
 
@@ -160,6 +165,8 @@ class InvoiceProcess implements InvoiceProcessInterface
 
     /**
      * Return the order state given a status
+     *
+     * @param string $status
      */
     private function getOrderStateByStatus(string $status)
     {
@@ -202,12 +209,12 @@ class InvoiceProcess implements InvoiceProcessInterface
         $transactionSave->save();
         $email = $item->getEmail();
         if ($email=='true') {
-          try {
-            $this->invoiceSender->send($invoice);
-            $invoice->setEmailSent(true);
-          } catch (\Exception $e) {
-            $this->_logger->debug("Error while sending invoice-E-Mail: ".$e);
-          }
+            try {
+                $this->invoiceSender->send($invoice);
+                $invoice->setEmailSent(true);
+            } catch (\Exception $e) {
+                $this->_logger->debug("Error while sending invoice-E-Mail: ".$e);
+            }
         }
     }
 }

@@ -14,25 +14,25 @@ use Aune\AutoInvoice\Api\InvoiceProcessInterfaceFactory;
 
 class ProcessCommand extends Command
 {
-    const COMMAND_NAME = 'aune:autoinvoice:process';
-    const COMMAND_DESCRIPTION = 'Create invoices according to configuration.';
-	const OPTION_DRY_RUN = 'dry-run';
-	
+    public const COMMAND_NAME = 'aune:autoinvoice:process';
+    public const COMMAND_DESCRIPTION = 'Creates invoices according to configuration.';
+    public const OPTION_DRY_RUN = 'dry-run';
+
     /**
      * @var State
      */
     private $state;
-    
+
     /**
      * @var LoggerInterface
      */
     private $logger;
-    
+
     /**
      * @var InvoiceProcessInterfaceFactory
      */
     private $invoiceProcessFactory;
-    
+
     /**
      * @param State $state
      * @param LoggerInterface $logger
@@ -41,12 +41,12 @@ class ProcessCommand extends Command
     public function __construct(
         State $state,
         LoggerInterface $logger,
-    	InvoiceProcessInterfaceFactory $invoiceProcessFactory
+        InvoiceProcessInterfaceFactory $invoiceProcessFactory
     ) {
         $this->state = $state;
         $this->logger = $logger;
         $this->invoiceProcessFactory = $invoiceProcessFactory;
-        
+
         parent::__construct();
     }
 
@@ -87,42 +87,42 @@ class ProcessCommand extends Command
         } catch (\Exception $e) {
             $this->state->setAreaCode('adminhtml');
         }
-        
+
         $output->writeln('<fg=green>Starting auto invoice procedure</>');
         $dryRun = $input->getOption(self::OPTION_DRY_RUN);
         if ($dryRun) {
             $output->writeln('<fg=yellow>This is a dry run, no orders will actually be invoiced.</>');
         }
-        
+
         $invoiceProcess = $this->invoiceProcessFactory->create();
         $items = $invoiceProcess->getItemsToProcess();
         foreach ($items as $item) {
             try {
-                
+
                 $order = $item->getOrder();
                 $message = sprintf(
-    				'Invoicing order #%s %s',
-    				$order->getIncrementId(),
-    				$item->getCaptureMode()
-    			);
-    			$output->writeln('<fg=green>' . $message . '</>');
-    			
+                    'Invoicing order #%s %s',
+                    $order->getIncrementId(),
+                    $item->getCaptureMode()
+                );
+                $output->writeln('<fg=green>' . $message . '</>');
+
                 if ($dryRun) {
                     continue;
                 }
-                
+
                 $this->logger->info($message);
-			    $invoiceProcess->invoice($item);
-			    
-        	} catch (\Exception $ex) {
-        		$output->writeln(sprintf(
-    				'<fg=red>%s</>',
-    				$ex->getMessage()
-    			));
-    			$this->logger->critical($ex->getMessage());
-        	}
+                $invoiceProcess->invoice($item);
+
+            } catch (\Exception $ex) {
+                $output->writeln(sprintf(
+                    '<fg=red>%s</>',
+                    $ex->getMessage()
+                ));
+                $this->logger->critical($ex->getMessage());
+            }
         }
-        
-    	$output->writeln('<fg=green>Auto invoice procedure completed.</>');
+
+        $output->writeln('<fg=green>Auto invoice procedure completed.</>');
     }
 }
