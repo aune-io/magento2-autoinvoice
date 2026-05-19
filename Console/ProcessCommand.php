@@ -80,7 +80,7 @@ class ProcessCommand extends Command
      * @throws \Exception
      * @return void
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
             $this->state->getAreaCode();
@@ -124,5 +124,7 @@ class ProcessCommand extends Command
         }
 
         $output->writeln('<fg=green>Auto invoice procedure completed.</>');
+
+        return Command::SUCCESS;
     }
 }
