@@ -14,6 +14,8 @@ This extension supports the following versions of Magento:
 *	Community Edition (CE) versions 2.2.x and 2.3.x and 2.4.x
 *	Enterprise Edition (EE) versions 2.2.x and 2.3.x and 2.4.x
 
+PHP 8.2 to 8.5 is supported. Stores running an older PHP version or Magento release should stay on version 2.4.1.
+
 ## Installation
 1. Require the module via Composer
 ```bash
