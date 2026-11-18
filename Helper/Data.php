@@ -64,7 +64,7 @@ class Data
             if (is_array($value)) {
                 $dstStatus = $value[self::RULE_DESTINATION_STATUS];
                 $captureMode = $value[self::RULE_CAPTURE_MODE];
-                $email = $value[self::RULE_EMAIL];
+                $email = $value[self::RULE_EMAIL] ?? '';
             } else {
                 $dstStatus = $value;
                 $captureMode = Invoice::CAPTURE_OFFLINE;

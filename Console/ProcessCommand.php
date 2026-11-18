@@ -89,7 +89,7 @@ class ProcessCommand extends Command
         }
 
         $output->writeln('<fg=green>Starting auto invoice procedure</>');
-        $dryRun = $input->getOption(self::OPTION_DRY_RUN);
+        $dryRun = $this->isDryRun($input->getOption(self::OPTION_DRY_RUN));
         if ($dryRun) {
             $output->writeln('<fg=yellow>This is a dry run, no orders will actually be invoiced.</>');
         }
@@ -126,5 +126,23 @@ class ProcessCommand extends Command
         $output->writeln('<fg=green>Auto invoice procedure completed.</>');
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Interpret the dry-run option value.
+     *
+     * The option accepts an optional value: a bare `--dry-run` reaches us as null (and must enable the
+     * simulation), while `--dry-run=1` / `--dry-run=0` keep working as documented.
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    private function isDryRun($value): bool
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 }
