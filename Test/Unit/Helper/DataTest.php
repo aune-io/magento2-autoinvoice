@@ -10,10 +10,11 @@ use Aune\AutoInvoice\Helper\Data as HelperData;
 /**
  * @SuppressWarnings(PHPMD.ShortVariable)
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\Aune\AutoInvoice\Helper\Data::class)]
 class DataTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var ScopeConfigInterface|PHPUnit_Framework_MockObject_MockObject
+     * @var ScopeConfigInterface|\PHPUnit\Framework\MockObject\MockObject
      */
     private $scopeConfigMock;
 
@@ -22,9 +23,9 @@ class DataTest extends \PHPUnit\Framework\TestCase
      */
     private $helperData;
 
-    protected function setUp()
+    protected function setUp(): void
     {
-        $this->scopeConfigMock = $this->getMockForAbstractClass(ScopeConfigInterface::class);
+        $this->scopeConfigMock = $this->createMock(ScopeConfigInterface::class);
 
         $this->helperData = new HelperData(
             $this->scopeConfigMock,
@@ -35,6 +36,7 @@ class DataTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getConfigDataProvider
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getConfigDataProvider')]
     public function testGetConfigValue($key, $isFlag, $method, $in, $out)
     {
         $this->scopeConfigMock->expects(self::once())
@@ -51,7 +53,7 @@ class DataTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array
      */
-    public function getConfigDataProvider()
+    public static function getConfigDataProvider()
     {
         return [
             ['key' => HelperData::XML_PATH_CRON_ENABLED,
@@ -66,6 +68,7 @@ class DataTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getProcessingRulesDataProvider
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getProcessingRulesDataProvider')]
     public function testGetProcessingRules($in, $out)
     {
         $this->scopeConfigMock->expects(self::once())
@@ -82,7 +85,7 @@ class DataTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array
      */
-    public function getProcessingRulesDataProvider()
+    public static function getProcessingRulesDataProvider()
     {
         return [[
             'in' => '{"pending|*":"complete"}',
@@ -91,6 +94,7 @@ class DataTest extends \PHPUnit\Framework\TestCase
                 HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
                 HelperData::RULE_DESTINATION_STATUS => 'complete',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_OFFLINE,
+                HelperData::RULE_EMAIL => '',
             ]],
         ], [
             'in' => '{"pending|*":"complete","pending|free":"processing"}',
@@ -99,11 +103,13 @@ class DataTest extends \PHPUnit\Framework\TestCase
                 HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
                 HelperData::RULE_DESTINATION_STATUS => 'complete',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_OFFLINE,
+                HelperData::RULE_EMAIL => '',
             ], [
                 HelperData::RULE_SOURCE_STATUS => 'pending',
                 HelperData::RULE_PAYMENT_METHOD => 'free',
                 HelperData::RULE_DESTINATION_STATUS => 'processing',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_OFFLINE,
+                HelperData::RULE_EMAIL => '',
             ]],
         ], [
             'in' => '{"pending|*":"complete","processing|*":"complete","pending|free":"processing"}',
@@ -112,16 +118,19 @@ class DataTest extends \PHPUnit\Framework\TestCase
                 HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
                 HelperData::RULE_DESTINATION_STATUS => 'complete',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_OFFLINE,
+                HelperData::RULE_EMAIL => '',
             ], [
                 HelperData::RULE_SOURCE_STATUS => 'processing',
                 HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
                 HelperData::RULE_DESTINATION_STATUS => 'complete',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_OFFLINE,
+                HelperData::RULE_EMAIL => '',
             ], [
                 HelperData::RULE_SOURCE_STATUS => 'pending',
                 HelperData::RULE_PAYMENT_METHOD => 'free',
                 HelperData::RULE_DESTINATION_STATUS => 'processing',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_OFFLINE,
+                HelperData::RULE_EMAIL => '',
             ]],
         ],[
             'in' => '{"pending|*":{"dst_status":"complete","capture_mode":"online"}}',
@@ -130,6 +139,7 @@ class DataTest extends \PHPUnit\Framework\TestCase
                 HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
                 HelperData::RULE_DESTINATION_STATUS => 'complete',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_ONLINE,
+                HelperData::RULE_EMAIL => '',
             ]],
         ], [
             'in' => '{"pending|*":{"dst_status":"complete","capture_mode":"online"},"pending|free":{"dst_status":"processing","capture_mode":"online"}}',
@@ -138,11 +148,13 @@ class DataTest extends \PHPUnit\Framework\TestCase
                 HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
                 HelperData::RULE_DESTINATION_STATUS => 'complete',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_ONLINE,
+                HelperData::RULE_EMAIL => '',
             ], [
                 HelperData::RULE_SOURCE_STATUS => 'pending',
                 HelperData::RULE_PAYMENT_METHOD => 'free',
                 HelperData::RULE_DESTINATION_STATUS => 'processing',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_ONLINE,
+                HelperData::RULE_EMAIL => '',
             ]],
         ], [
             'in' => '{"pending|*":{"dst_status":"complete","capture_mode":"online"},"processing|*":{"dst_status":"complete","capture_mode":"online"},"pending|free":{"dst_status":"processing","capture_mode":"online"}}',
@@ -151,16 +163,19 @@ class DataTest extends \PHPUnit\Framework\TestCase
                 HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
                 HelperData::RULE_DESTINATION_STATUS => 'complete',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_ONLINE,
+                HelperData::RULE_EMAIL => '',
             ], [
                 HelperData::RULE_SOURCE_STATUS => 'processing',
                 HelperData::RULE_PAYMENT_METHOD => HelperData::RULE_PAYMENT_METHOD_ALL,
                 HelperData::RULE_DESTINATION_STATUS => 'complete',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_ONLINE,
+                HelperData::RULE_EMAIL => '',
             ], [
                 HelperData::RULE_SOURCE_STATUS => 'pending',
                 HelperData::RULE_PAYMENT_METHOD => 'free',
                 HelperData::RULE_DESTINATION_STATUS => 'processing',
                 HelperData::RULE_CAPTURE_MODE => Invoice::CAPTURE_ONLINE,
+                HelperData::RULE_EMAIL => '',
             ]],
         ]];
     }

@@ -5,7 +5,16 @@
  * @SuppressWarnings(PHPMD)
  */
 
-require_once realpath(__DIR__ . '/../../vendor/autoload.php');
+// Autoloader: standalone checkout (module's own vendor/), or installed inside a Magento project (vendor/aune-io/<module>)
+foreach ([
+    __DIR__ . '/../../vendor/autoload.php',
+    __DIR__ . '/../../../../autoload.php',
+] as $autoload) {
+    if (is_file($autoload)) {
+        require_once $autoload;
+        break;
+    }
+}
 
 if (!function_exists('__')) {
     /**
