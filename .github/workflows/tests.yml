@@ -46,10 +46,11 @@ jobs:
           composer config --json repositories.module "{\"type\":\"path\",\"url\":\"$GITHUB_WORKSPACE\",\"options\":{\"symlink\":false}}"
           composer require --no-interaction --no-progress "$PACKAGE:@dev"
 
-      - name: Enable the module and compile DI
+      - name: Enable modules and compile DI
         working-directory: ${{ runner.temp }}/magento2
+        # Magento 2.4.9 ships no app/etc/config.php, so enabling only our module would leave core modules out
         run: |
-          php bin/magento module:enable "$MODULE"
+          php bin/magento module:enable --all
           php bin/magento setup:di:compile
 
       - name: Unit tests
