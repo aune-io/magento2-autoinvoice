@@ -123,7 +123,7 @@ class ProcessingRule extends Value
             if (is_array($value)) {
                 $dstStatus = $value[HelperData::RULE_DESTINATION_STATUS];
                 $captureMode = $value[HelperData::RULE_CAPTURE_MODE];
-                $email = $value[HelperData::RULE_EMAIL];
+                $email = $value[HelperData::RULE_EMAIL] ?? '';
             } else {
                 $dstStatus = $value;
                 $captureMode = Invoice::CAPTURE_OFFLINE;

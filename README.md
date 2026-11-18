@@ -1,18 +1,20 @@
 # Magento 2 Auto Invoice
 Magento 2 procedure to automatically invoice orders in a given status.
 
-[![Build Status](https://travis-ci.org/aune-io/magento2-autoinvoice.svg?branch=master)](https://travis-ci.org/aune-io/magento2-autoinvoice)
-[![Coverage Status](https://coveralls.io/repos/github/aune-io/magento2-autoinvoice/badge.svg?branch=master)](https://coveralls.io/github/aune-io/magento2-autoinvoice?branch=master)
+[![Tests](https://github.com/aune-io/magento2-autoinvoice/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/aune-io/magento2-autoinvoice/actions/workflows/tests.yml)
 [![Latest Stable Version](https://poser.pugx.org/aune-io/magento2-autoinvoice/v/stable)](https://packagist.org/packages/aune-io/magento2-autoinvoice)
 [![Latest Unstable Version](https://poser.pugx.org/aune-io/magento2-autoinvoice/v/unstable)](https://packagist.org/packages/aune-io/magento2-autoinvoice)
 [![Total Downloads](https://poser.pugx.org/aune-io/magento2-autoinvoice/downloads)](https://packagist.org/packages/aune-io/magento2-autoinvoice)
 [![License](https://poser.pugx.org/aune-io/magento2-autoinvoice/license)](https://packagist.org/packages/aune-io/magento2-autoinvoice)
 
 ## System requirements
-This extension supports the following versions of Magento:
+This extension supports the following versions:
 
-*	Community Edition (CE) versions 2.2.x and 2.3.x and 2.4.x
-*	Enterprise Edition (EE) versions 2.2.x and 2.3.x and 2.4.x
+*	Magento Open Source / Adobe Commerce 2.4.6, 2.4.7, 2.4.8 and 2.4.9
+*	PHP 8.2, 8.3, 8.4 and 8.5 (as far as each Magento release supports them)
+
+Older Magento (2.2, 2.3, 2.4.0 - 2.4.5) and PHP (7.x, 8.0, 8.1) versions are no longer supported.
+The last release supporting them is the one tagged before this change; use that if you are still on those versions.
 
 ## Installation
 1. Require the module via Composer

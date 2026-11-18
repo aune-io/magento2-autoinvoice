@@ -1,0 +1,58 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  unit:
+    name: Magento ${{ matrix.magento }} / PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { magento: 2.4.6-p15, php: '8.2' }
+          - { magento: 2.4.7-p10, php: '8.2' }
+          - { magento: 2.4.7-p10, php: '8.3' }
+          - { magento: 2.4.8-p5, php: '8.3' }
+          - { magento: 2.4.8-p5, php: '8.4' }
+          - { magento: 2.4.9, php: '8.3' }
+          - { magento: 2.4.9, php: '8.5' }
+    env:
+      # Older Magento releases require packages with published advisories; do not let Composer refuse them
+      COMPOSER_NO_SECURITY_BLOCKING: 1
+      PACKAGE: aune-io/magento2-autoinvoice
+      MODULE: Aune_AutoInvoice
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: bcmath, ctype, curl, dom, ftp, gd, hash, iconv, intl, mbstring, openssl, pdo_mysql, simplexml, soap, sockets, sodium, xsl, zip
+          tools: composer:v2
+          coverage: none
+        env:
+          COMPOSER_MEMORY_LIMIT: -1
+
+      - name: Create a vanilla Magento project and install the module
+        # Uses the public Mage-OS mirror of Magento Open Source, so no repo.magento.com keys are needed
+        run: |
+          composer create-project --no-interaction --no-install --repository-url=https://mirror.mage-os.org/ magento/project-community-edition="${{ matrix.magento }}" "$RUNNER_TEMP/magento2"
+          cd "$RUNNER_TEMP/magento2"
+          composer config --no-plugins allow-plugins true
+          composer config --json repositories.module "{\"type\":\"path\",\"url\":\"$GITHUB_WORKSPACE\",\"options\":{\"symlink\":false}}"
+          composer require --no-interaction --no-progress "$PACKAGE:@dev"
+
+      - name: Enable modules and compile DI
+        working-directory: ${{ runner.temp }}/magento2
+        # Magento 2.4.9 ships no app/etc/config.php, so enabling only our module would leave core modules out
+        run: |
+          php bin/magento module:enable --all
+          php bin/magento setup:di:compile
+
+      - name: Unit tests
+        working-directory: ${{ runner.temp }}/magento2/vendor/aune-io/magento2-autoinvoice
+        run: ${{ runner.temp }}/magento2/vendor/bin/phpunit -c phpunit.xml.dist

@@ -6,53 +6,62 @@ use Psr\Log\LoggerInterface;
 use Magento\Sales\Model\Order;
 use Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterface;
 use Aune\AutoInvoice\Api\InvoiceProcessInterface;
+use Aune\AutoInvoice\Api\InvoiceProcessInterfaceFactory;
 use Aune\AutoInvoice\Helper\Data as HelperData;
 use Aune\AutoInvoice\Cron\InvoiceProcess;
 
 /**
  * @SuppressWarnings(PHPMD.ShortVariable)
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\Aune\AutoInvoice\Cron\InvoiceProcess::class)]
 class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @var HelperData|PHPUnit_Framework_MockObject_MockObject
+     * @var HelperData|\PHPUnit\Framework\MockObject\MockObject
      */
     private $helperDataMock;
     
     /**
-     * @var LoggerInterface|PHPUnit_Framework_MockObject_MockObject
+     * @var LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
      */
     private $loggerMock;
     
     /**
-     * @var InvoiceProcessInterface|PHPUnit_Framework_MockObject_MockObject
+     * @var InvoiceProcessInterface|\PHPUnit\Framework\MockObject\MockObject
      */
     private $invoiceProcessMock;
+
+    /**
+     * @var InvoiceProcessInterfaceFactory|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private $invoiceProcessFactoryMock;
     
     /**
      * @var InvoiceProcess
      */
     private $invoiceProcess;
     
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->helperDataMock = $this->getMockBuilder(HelperData::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->loggerMock = $this->getMockForAbstractClass(LoggerInterface::class);
-        $this->invoiceProcessMock = $this->getMockForAbstractClass(InvoiceProcessInterface::class);
+        $this->loggerMock = $this->createMock(LoggerInterface::class);
+        $this->invoiceProcessMock = $this->createMock(InvoiceProcessInterface::class);
+        $this->invoiceProcessFactoryMock = $this->getMockBuilder(InvoiceProcessInterfaceFactory::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['create'])
+            ->getMock();
+        $this->invoiceProcessFactoryMock->method('create')->willReturn($this->invoiceProcessMock);
         
         $this->invoiceProcess = new InvoiceProcess(
             $this->helperDataMock,
             $this->loggerMock,
-            $this->invoiceProcessMock
+            $this->invoiceProcessFactoryMock
         );
     }
     
-    /**
-     * @covers \Aune\AutoInvoice\Cron\InvoiceProcess::execute
-     */
     public function testExecuteDisabled()
     {
         $this->helperDataMock->expects(self::exactly(1))
@@ -68,9 +77,6 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
         $this->invoiceProcess->execute();
     }
     
-    /**
-     * @covers \Aune\AutoInvoice\Cron\InvoiceProcess::execute
-     */
     public function testExecute()
     {
         $this->helperDataMock->expects(self::exactly(1))
@@ -83,7 +89,7 @@ class InvoiceProcessTest extends \PHPUnit\Framework\TestCase
                 ->disableOriginalConstructor()
                 ->getMock();
             
-            $itemMock = $this->getMockForAbstractClass(InvoiceProcessItemInterface::class);
+            $itemMock = $this->createMock(InvoiceProcessItemInterface::class);
             $itemMock->expects(self::any())
                 ->method('getOrder')
                 ->willReturn($orderMock);

@@ -6,6 +6,7 @@ use Magento\Sales\Model\Order;
 use Aune\AutoInvoice\Api\Data\InvoiceProcessItemInterface;
 use Aune\AutoInvoice\Model\InvoiceProcessItem;
 
+#[\PHPUnit\Framework\Attributes\CoversClass(\Aune\AutoInvoice\Model\InvoiceProcessItem::class)]
 class InvoiceProcessItemTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -13,7 +14,7 @@ class InvoiceProcessItemTest extends \PHPUnit\Framework\TestCase
      */
     private $invoiceProcessItem;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->invoiceProcessItem = new InvoiceProcessItem();
     }
@@ -32,8 +33,14 @@ class InvoiceProcessItemTest extends \PHPUnit\Framework\TestCase
     /**
      * @dataProvider getFieldsDataProvider
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getFieldsDataProvider')]
     public function testGettersAndSetters($field, $getter, $setter, $value)
     {
+        if ($value instanceof \Closure) {
+            // Data providers are static, so mocks are created lazily here
+            $value = $value($this);
+        }
+
         $this->assertEquals(
             $this->invoiceProcessItem->$setter($value),
             $this->invoiceProcessItem
@@ -53,11 +60,13 @@ class InvoiceProcessItemTest extends \PHPUnit\Framework\TestCase
     /**
      * @return array
      */
-    public function getFieldsDataProvider()
+    public static function getFieldsDataProvider()
     {
-        $orderMock = $this->getMockBuilder(Order::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $orderMock = static function (self $test) {
+            return $test->getMockBuilder(Order::class)
+                ->disableOriginalConstructor()
+                ->getMock();
+        };
 
         return [
             ['field' => InvoiceProcessItemInterface::KEY_ORDER, 'getter' => 'getOrder', 'setter' => 'setOrder', 'value' => $orderMock],
